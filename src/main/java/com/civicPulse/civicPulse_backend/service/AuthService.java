@@ -15,9 +15,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+    public AuthService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -34,8 +35,12 @@ public class AuthService {
                 passwordEncoder.encode(request.getPassword());
 
         User user = new User(
+                request.getName(),
                 request.getEmail(),
-                encodedPassword
+                encodedPassword,
+                request.getPhoneNumber(),
+                request.getCity(),
+                request.getWard()
         );
 
         userRepository.save(user);
@@ -63,8 +68,8 @@ public class AuthService {
             return "Invalid email or password";
         }
 
-        // Generate JWT
-        String token = jwtService.generateToken(user.getEmail());
+        String token =
+                jwtService.generateToken(user.getEmail());
 
         return token;
     }
