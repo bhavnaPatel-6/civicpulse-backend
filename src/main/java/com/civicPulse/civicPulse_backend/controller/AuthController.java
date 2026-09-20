@@ -16,6 +16,10 @@ public class AuthController {
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
+    @GetMapping("/register-test")
+    public String registerTest() {
+        return "Register endpoint is working";
+    }
 
     @PostMapping("/register")
     public ResponseEntity<String> register(
