@@ -2,7 +2,6 @@ package com.civicPulse.civicPulse_backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,22 +32,28 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/register",
                                 "/api/auth/login",
-                                "/api/test"
-                                ,
+                                "/api/test",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
+
                         // ADMIN ONLY
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
-                        .requestMatchers("/api/admin/**")
-                        .hasRole("ADMIN")
 
+                        // AUTHORITY (or ADMIN) ONLY
+                        .requestMatchers("/api/authority/**")
+                        .hasAnyRole("AUTHORITY", "ADMIN")
+
+                        // koi bhi logged-in user
                         .requestMatchers("/api/categories")
                         .authenticated()
+
+                        // ye SABSE LAST — baaki sab bhi authenticated chahiye
                         .anyRequest().authenticated()
                 )
+
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

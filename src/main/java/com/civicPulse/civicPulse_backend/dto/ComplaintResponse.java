@@ -24,6 +24,8 @@ public class ComplaintResponse {
     private String citizenName;
     private String assignedAuthorityName;
     private String rejectionReason;
+    private String resolutionNote;
+    private String resolutionPhotoUrl;
     private LocalDateTime createdAt;
     private LocalDateTime verifiedAt;
     private LocalDateTime resolvedAt;
@@ -45,6 +47,8 @@ public class ComplaintResponse {
             String citizenName,
             String assignedAuthorityName,
             String rejectionReason,
+            String resolutionNote,
+            String resolutionPhotoUrl,
             LocalDateTime createdAt,
             LocalDateTime verifiedAt,
             LocalDateTime resolvedAt) {
@@ -65,6 +69,8 @@ public class ComplaintResponse {
         this.citizenName = citizenName;
         this.assignedAuthorityName = assignedAuthorityName;
         this.rejectionReason = rejectionReason;
+        this.resolutionNote = resolutionNote;
+        this.resolutionPhotoUrl = resolutionPhotoUrl;
         this.createdAt = createdAt;
         this.verifiedAt = verifiedAt;
         this.resolvedAt = resolvedAt;
@@ -88,6 +94,8 @@ public class ComplaintResponse {
     public String getCitizenName() { return citizenName; }
     public String getAssignedAuthorityName() { return assignedAuthorityName; }
     public String getRejectionReason() { return rejectionReason; }
+    public String getResolutionNote() { return resolutionNote; }
+    public String getResolutionPhotoUrl() { return resolutionPhotoUrl; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getVerifiedAt() { return verifiedAt; }
     public LocalDateTime getResolvedAt() { return resolvedAt; }

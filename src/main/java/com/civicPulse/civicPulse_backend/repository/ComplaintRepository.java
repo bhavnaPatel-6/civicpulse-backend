@@ -67,9 +67,12 @@ public interface ComplaintRepository
             Long reviewedById
     );
 
+
     // Citizen + particular status
     List<Complaint> findByCitizenIdAndStatus(
             Long citizenId,
             ComplaintStatus status
     );
+
+
 }

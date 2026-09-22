@@ -107,7 +107,29 @@ public class Complaint {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+// Complaint.java mein add karo
 
+    @Column(length = 1000)
+    private String resolutionNote;
+
+    private String resolutionPhotoUrl;
+
+    // Getters and Setters
+    public String getResolutionNote() {
+        return resolutionNote;
+    }
+
+    public void setResolutionNote(String resolutionNote) {
+        this.resolutionNote = resolutionNote;
+    }
+
+    public String getResolutionPhotoUrl() {
+        return resolutionPhotoUrl;
+    }
+
+    public void setResolutionPhotoUrl(String resolutionPhotoUrl) {
+        this.resolutionPhotoUrl = resolutionPhotoUrl;
+    }
 
     // ===== Getters and Setters =====
 
