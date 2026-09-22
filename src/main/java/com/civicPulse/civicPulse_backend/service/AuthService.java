@@ -67,9 +67,11 @@ public class AuthService {
         if (!passwordMatches) {
             return "Invalid email or password";
         }
-
         String token =
-                jwtService.generateToken(user.getEmail());
+                jwtService.generateToken(
+                        user.getEmail(),
+                        user.getRole()
+                );
 
         return token;
     }

@@ -25,7 +25,6 @@ public class UserController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new RuntimeException("User not found"));
-
         return new UserResponse(
                 user.getId(),
                 user.getName(),
@@ -34,6 +33,7 @@ public class UserController {
                 user.getCity(),
                 user.getWard(),
                 user.getRole(),
+                user.getDepartment(),
                 user.getReputationPoints(),
                 user.getCreatedAt()
         );
