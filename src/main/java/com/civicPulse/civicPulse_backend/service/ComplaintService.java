@@ -4,6 +4,8 @@ import com.civicPulse.civicPulse_backend.dto.ComplaintRejectRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResolveRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintVerifyRequest;
 import com.civicPulse.civicPulse_backend.entity.*;
+import com.civicPulse.civicPulse_backend.repository.SLARuleRepository;
+import com.civicPulse.civicPulse_backend.repository.SLATrackerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.civicPulse.civicPulse_backend.dto.ComplaintCreateRequest;
@@ -22,16 +24,24 @@ public class ComplaintService {
     private final UserRepository userRepository;
     private final CategoryService categoryService;
 
+// ComplaintService.java mein constructor + fields update karo
+
+    private final SLARuleRepository slaRuleRepository;
+    private final SLATrackerRepository slaTrackerRepository;
+
     public ComplaintService(
             ComplaintRepository complaintRepository,
             UserRepository userRepository,
-            CategoryService categoryService) {
+            CategoryService categoryService,
+            SLARuleRepository slaRuleRepository,
+            SLATrackerRepository slaTrackerRepository) {
 
         this.complaintRepository = complaintRepository;
         this.userRepository = userRepository;
         this.categoryService = categoryService;
+        this.slaRuleRepository = slaRuleRepository;
+        this.slaTrackerRepository = slaTrackerRepository;
     }
-
 
     // Citizen ek naya complaint report karta hai
     public ComplaintResponse createComplaint(
@@ -91,6 +101,8 @@ public class ComplaintService {
     }
 
     // Authority: complaint verify karo, priority set karo
+// verifyComplaint() method ke andar, saved hone ke turant baad ye add karo:
+
     public ComplaintResponse verifyComplaint(
             String authorityEmail,
             Long complaintId,
@@ -118,7 +130,10 @@ public class ComplaintService {
 
         Complaint saved = complaintRepository.save(complaint);
 
-        // Citizen ko accurate report ke liye reputation points
+        // ===== SLA Tracker create karo =====
+        createSlaTracker(saved);
+
+        // Citizen ko reputation points
         User citizen = saved.getCitizen();
         citizen.setReputationPoints(citizen.getReputationPoints() + 10);
         userRepository.save(citizen);
@@ -126,6 +141,22 @@ public class ComplaintService {
         return toResponse(saved);
     }
 
+    // Naya private helper method - class ke neeche add karo
+    private void createSlaTracker(Complaint complaint) {
+
+        SLARule rule = slaRuleRepository
+                .findByCategoryIdAndPriority(complaint.getCategory().getId(), complaint.getPriority())
+                .orElseThrow(() -> new RuntimeException(
+                        "SLA rule not defined for this category and priority. Contact admin."));
+
+        SLATracker tracker = new SLATracker(
+                complaint,
+                complaint.getVerifiedAt(),
+                complaint.getVerifiedAt().plusHours(rule.getDurationHours())
+        );
+
+        slaTrackerRepository.save(tracker);
+    }
 
     // Authority: complaint reject karo, reason ke saath
     public ComplaintResponse rejectComplaint(
