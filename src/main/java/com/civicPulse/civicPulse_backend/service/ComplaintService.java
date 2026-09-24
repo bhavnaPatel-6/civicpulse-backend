@@ -3,6 +3,7 @@ package com.civicPulse.civicPulse_backend.service;
 import com.civicPulse.civicPulse_backend.dto.ComplaintRejectRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResolveRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintVerifyRequest;
+import com.civicPulse.civicPulse_backend.dto.RewardHistoryResponse;
 import com.civicPulse.civicPulse_backend.entity.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import com.civicPulse.civicPulse_backend.dto.ComplaintCreateRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResponse;
 import com.civicPulse.civicPulse_backend.repository.ComplaintRepository;
 import com.civicPulse.civicPulse_backend.repository.ComplaintUpvoteRepository;
+import com.civicPulse.civicPulse_backend.repository.RewardHistoryRepository;
 import com.civicPulse.civicPulse_backend.repository.SLARuleRepository;
 import com.civicPulse.civicPulse_backend.repository.SLATrackerRepository;
 import com.civicPulse.civicPulse_backend.repository.UserRepository;
@@ -30,6 +32,7 @@ public class ComplaintService {
     private final SLARuleRepository slaRuleRepository;
     private final SLATrackerRepository slaTrackerRepository;
     private final ComplaintUpvoteRepository upvoteRepository;
+    private final RewardHistoryRepository rewardHistoryRepository;
 
     public ComplaintService(
             ComplaintRepository complaintRepository,
@@ -37,7 +40,8 @@ public class ComplaintService {
             CategoryService categoryService,
             SLARuleRepository slaRuleRepository,
             SLATrackerRepository slaTrackerRepository,
-            ComplaintUpvoteRepository upvoteRepository) {
+            ComplaintUpvoteRepository upvoteRepository,
+            RewardHistoryRepository rewardHistoryRepository) {
 
         this.complaintRepository = complaintRepository;
         this.userRepository = userRepository;
@@ -45,6 +49,7 @@ public class ComplaintService {
         this.slaRuleRepository = slaRuleRepository;
         this.slaTrackerRepository = slaTrackerRepository;
         this.upvoteRepository = upvoteRepository;
+        this.rewardHistoryRepository = rewardHistoryRepository;
     }
 
 
@@ -136,9 +141,7 @@ public class ComplaintService {
 
         createSlaTracker(saved);
 
-        User citizen = saved.getCitizen();
-        citizen.setReputationPoints(citizen.getReputationPoints() + 10);
-        userRepository.save(citizen);
+        awardPoints(saved.getCitizen(), 10, RewardReason.COMPLAINT_VERIFIED, saved);
 
         return toResponse(saved);
     }
@@ -227,7 +230,11 @@ public class ComplaintService {
         complaint.setResolutionPhotoUrl(request.getResolutionPhotoUrl());
         complaint.setResolvedAt(LocalDateTime.now());
 
-        return toResponse(complaintRepository.save(complaint));
+        Complaint saved = complaintRepository.save(complaint);
+
+        awardPoints(saved.getCitizen(), 15, RewardReason.COMPLAINT_RESOLVED, saved);
+
+        return toResponse(saved);
     }
 
 
@@ -305,7 +312,42 @@ public class ComplaintService {
 
         Complaint saved = complaintRepository.save(complaint);
 
+        awardPoints(citizen, 2, RewardReason.UPVOTE_GIVEN, saved);
+
+        if (saved.getUpvoteCount() == 5) {
+            awardPoints(saved.getCitizen(), 20, RewardReason.POPULAR_COMPLAINT_BONUS, saved);
+        }
+
         return toResponse(saved);
+    }
+
+
+    // ===== Apni reward history dekho =====
+    public Page<RewardHistoryResponse> getMyRewardHistory(String citizenEmail, Pageable pageable) {
+
+        User citizen = userRepository.findByEmail(citizenEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return rewardHistoryRepository.findByCitizenIdOrderByCreatedAtDesc(citizen.getId(), pageable)
+                .map(rh -> new RewardHistoryResponse(
+                        rh.getId(),
+                        rh.getPoints(),
+                        rh.getReason(),
+                        rh.getComplaint() != null ? rh.getComplaint().getId() : null,
+                        rh.getComplaint() != null ? rh.getComplaint().getTitle() : null,
+                        rh.getCreatedAt()
+                ));
+    }
+
+
+    // Helper - points award karo aur history save karo
+    private void awardPoints(User citizen, int points, RewardReason reason, Complaint complaint) {
+
+        citizen.setReputationPoints(citizen.getReputationPoints() + points);
+        userRepository.save(citizen);
+
+        RewardHistory history = new RewardHistory(citizen, points, reason, complaint);
+        rewardHistoryRepository.save(history);
     }
 
 
