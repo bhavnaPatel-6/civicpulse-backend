@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/complaints")
 public class ComplaintController {
@@ -72,6 +74,26 @@ public class ComplaintController {
 
         return ResponseEntity.ok(
                 complaintService.getMyComplaints(citizenEmail, pageable)
+        );
+    }
+    @GetMapping("/similar")
+    public ResponseEntity<List<ComplaintResponse>> findSimilar(
+            @RequestParam Long categoryId,
+            @RequestParam Double latitude,
+            @RequestParam Double longitude
+    ) {
+        return ResponseEntity.ok(
+                complaintService.findSimilarComplaints(categoryId, latitude, longitude)
+        );
+    }
+
+    @PatchMapping("/{id}/upvote")
+    public ResponseEntity<ComplaintResponse> upvoteComplaint(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return ResponseEntity.ok(
+                complaintService.upvoteComplaint(authentication.getName(), id)
         );
     }
 

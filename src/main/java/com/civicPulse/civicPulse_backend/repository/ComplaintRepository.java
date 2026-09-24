@@ -74,5 +74,10 @@ public interface ComplaintRepository
             ComplaintStatus status
     );
 
+// ComplaintRepository.java mein add karo
 
+    List<Complaint> findByCategoryIdAndCityAndWardAndStatusNotIn(
+            Long categoryId, String city, String ward, List<ComplaintStatus> excludedStatuses);
+    List<Complaint> findByCategoryIdAndStatusNotIn(Long categoryId, List<ComplaintStatus> excludedStatuses);
 }
+

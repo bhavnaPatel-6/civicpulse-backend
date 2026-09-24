@@ -26,6 +26,7 @@ public class ComplaintResponse {
     private String rejectionReason;
     private String resolutionNote;
     private String resolutionPhotoUrl;
+    private Integer upvoteCount;
     private LocalDateTime createdAt;
     private LocalDateTime verifiedAt;
     private LocalDateTime resolvedAt;
@@ -49,6 +50,7 @@ public class ComplaintResponse {
             String rejectionReason,
             String resolutionNote,
             String resolutionPhotoUrl,
+            Integer upvoteCount,
             LocalDateTime createdAt,
             LocalDateTime verifiedAt,
             LocalDateTime resolvedAt) {
@@ -71,6 +73,7 @@ public class ComplaintResponse {
         this.rejectionReason = rejectionReason;
         this.resolutionNote = resolutionNote;
         this.resolutionPhotoUrl = resolutionPhotoUrl;
+        this.upvoteCount = upvoteCount;
         this.createdAt = createdAt;
         this.verifiedAt = verifiedAt;
         this.resolvedAt = resolvedAt;
@@ -96,6 +99,7 @@ public class ComplaintResponse {
     public String getRejectionReason() { return rejectionReason; }
     public String getResolutionNote() { return resolutionNote; }
     public String getResolutionPhotoUrl() { return resolutionPhotoUrl; }
+    public Integer getUpvoteCount() { return upvoteCount; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getVerifiedAt() { return verifiedAt; }
     public LocalDateTime getResolvedAt() { return resolvedAt; }

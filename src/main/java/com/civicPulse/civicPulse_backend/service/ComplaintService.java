@@ -4,44 +4,49 @@ import com.civicPulse.civicPulse_backend.dto.ComplaintRejectRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResolveRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintVerifyRequest;
 import com.civicPulse.civicPulse_backend.entity.*;
-import com.civicPulse.civicPulse_backend.repository.SLARuleRepository;
-import com.civicPulse.civicPulse_backend.repository.SLATrackerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.civicPulse.civicPulse_backend.dto.ComplaintCreateRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResponse;
 import com.civicPulse.civicPulse_backend.repository.ComplaintRepository;
+import com.civicPulse.civicPulse_backend.repository.ComplaintUpvoteRepository;
+import com.civicPulse.civicPulse_backend.repository.SLARuleRepository;
+import com.civicPulse.civicPulse_backend.repository.SLATrackerRepository;
 import com.civicPulse.civicPulse_backend.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ComplaintService {
 
+    private static final double NEARBY_RADIUS_METERS = 150;
+
     private final ComplaintRepository complaintRepository;
     private final UserRepository userRepository;
     private final CategoryService categoryService;
-
-// ComplaintService.java mein constructor + fields update karo
-
     private final SLARuleRepository slaRuleRepository;
     private final SLATrackerRepository slaTrackerRepository;
+    private final ComplaintUpvoteRepository upvoteRepository;
 
     public ComplaintService(
             ComplaintRepository complaintRepository,
             UserRepository userRepository,
             CategoryService categoryService,
             SLARuleRepository slaRuleRepository,
-            SLATrackerRepository slaTrackerRepository) {
+            SLATrackerRepository slaTrackerRepository,
+            ComplaintUpvoteRepository upvoteRepository) {
 
         this.complaintRepository = complaintRepository;
         this.userRepository = userRepository;
         this.categoryService = categoryService;
         this.slaRuleRepository = slaRuleRepository;
         this.slaTrackerRepository = slaTrackerRepository;
+        this.upvoteRepository = upvoteRepository;
     }
+
 
     // Citizen ek naya complaint report karta hai
     public ComplaintResponse createComplaint(
@@ -100,9 +105,8 @@ public class ComplaintService {
                 .map(this::toResponse);
     }
 
-    // Authority: complaint verify karo, priority set karo
-// verifyComplaint() method ke andar, saved hone ke turant baad ye add karo:
 
+    // Authority: complaint verify karo, priority set karo
     public ComplaintResponse verifyComplaint(
             String authorityEmail,
             Long complaintId,
@@ -130,10 +134,8 @@ public class ComplaintService {
 
         Complaint saved = complaintRepository.save(complaint);
 
-        // ===== SLA Tracker create karo =====
         createSlaTracker(saved);
 
-        // Citizen ko reputation points
         User citizen = saved.getCitizen();
         citizen.setReputationPoints(citizen.getReputationPoints() + 10);
         userRepository.save(citizen);
@@ -141,22 +143,6 @@ public class ComplaintService {
         return toResponse(saved);
     }
 
-    // Naya private helper method - class ke neeche add karo
-    private void createSlaTracker(Complaint complaint) {
-
-        SLARule rule = slaRuleRepository
-                .findByCategoryIdAndPriority(complaint.getCategory().getId(), complaint.getPriority())
-                .orElseThrow(() -> new RuntimeException(
-                        "SLA rule not defined for this category and priority. Contact admin."));
-
-        SLATracker tracker = new SLATracker(
-                complaint,
-                complaint.getVerifiedAt(),
-                complaint.getVerifiedAt().plusHours(rule.getDurationHours())
-        );
-
-        slaTrackerRepository.save(tracker);
-    }
 
     // Authority: complaint reject karo, reason ke saath
     public ComplaintResponse rejectComplaint(
@@ -232,6 +218,10 @@ public class ComplaintService {
             throw new RuntimeException("Only IN_PROGRESS complaints can be resolved");
         }
 
+        if (request.getResolutionPhotoUrl() == null || request.getResolutionPhotoUrl().isBlank()) {
+            throw new RuntimeException("Resolution proof photo is required");
+        }
+
         complaint.setStatus(ComplaintStatus.RESOLVED);
         complaint.setResolutionNote(request.getResolutionNote());
         complaint.setResolutionPhotoUrl(request.getResolutionPhotoUrl());
@@ -264,6 +254,96 @@ public class ComplaintService {
     }
 
 
+    // ===== Similar complaints dhoondo (radius-based) =====
+    public List<ComplaintResponse> findSimilarComplaints(Long categoryId, Double latitude, Double longitude) {
+
+        List<ComplaintStatus> excluded = List.of(ComplaintStatus.CLOSED, ComplaintStatus.REJECTED);
+
+        List<Complaint> sameCategory = complaintRepository
+                .findByCategoryIdAndStatusNotIn(categoryId, excluded);
+
+        return sameCategory.stream()
+                .filter(c -> calculateDistanceInMeters(
+                        latitude, longitude, c.getLatitude(), c.getLongitude()) <= NEARBY_RADIUS_METERS)
+                .map(this::toResponse)
+                .toList();
+    }
+
+
+    // ===== Upvote karo =====
+    public ComplaintResponse upvoteComplaint(String citizenEmail, Long complaintId) {
+
+        User citizen = userRepository.findByEmail(citizenEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Complaint complaint = complaintRepository.findById(complaintId)
+                .orElseThrow(() -> new RuntimeException("Complaint not found"));
+
+        if (complaint.getStatus() == ComplaintStatus.CLOSED || complaint.getStatus() == ComplaintStatus.REJECTED) {
+            throw new RuntimeException("Cannot upvote a closed or rejected complaint");
+        }
+
+        if (complaint.getCitizen().getId().equals(citizen.getId())) {
+            throw new RuntimeException("You cannot upvote your own complaint");
+        }
+
+        boolean alreadyUpvoted = upvoteRepository
+                .existsByComplaintIdAndCitizenId(complaintId, citizen.getId());
+
+        if (alreadyUpvoted) {
+            throw new RuntimeException("You have already upvoted this complaint");
+        }
+
+        ComplaintUpvote upvote = new ComplaintUpvote(complaint, citizen);
+        upvoteRepository.save(upvote);
+
+        complaint.setUpvoteCount(complaint.getUpvoteCount() + 1);
+
+        if (complaint.getUpvoteCount() >= 10 && complaint.getPriority() == null) {
+            complaint.setPriority(Priority.HIGH);
+        }
+
+        Complaint saved = complaintRepository.save(complaint);
+
+        return toResponse(saved);
+    }
+
+
+    // Helper - SLA rule dekh kar tracker banata hai
+    private void createSlaTracker(Complaint complaint) {
+
+        SLARule rule = slaRuleRepository
+                .findByCategoryIdAndPriority(complaint.getCategory().getId(), complaint.getPriority())
+                .orElseThrow(() -> new RuntimeException(
+                        "SLA rule not defined for this category and priority. Contact admin."));
+
+        SLATracker tracker = new SLATracker(
+                complaint,
+                complaint.getVerifiedAt(),
+                complaint.getVerifiedAt().plusHours(rule.getDurationHours())
+        );
+
+        slaTrackerRepository.save(tracker);
+    }
+
+
+    // Helper - Haversine formula, do points ke beech distance nikalta hai (meters mein)
+    private double calculateDistanceInMeters(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371000;
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
+    }
+
+
     // Entity ko Response DTO mein convert karna
     private ComplaintResponse toResponse(Complaint c) {
         return new ComplaintResponse(
@@ -285,6 +365,7 @@ public class ComplaintService {
                 c.getRejectionReason(),
                 c.getResolutionNote(),
                 c.getResolutionPhotoUrl(),
+                c.getUpvoteCount(),
                 c.getCreatedAt(),
                 c.getVerifiedAt(),
                 c.getResolvedAt()

@@ -2,6 +2,7 @@ package com.civicPulse.civicPulse_backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +29,10 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+
+                // CORS enable
+                .cors(Customizer.withDefaults())
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/auth/register",
@@ -50,7 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/categories")
                         .authenticated()
 
-                        // ye SABSE LAST — baaki sab bhi authenticated chahiye
+                        // baaki sab authenticated
                         .anyRequest().authenticated()
                 )
 

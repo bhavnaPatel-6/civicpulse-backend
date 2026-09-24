@@ -87,8 +87,18 @@ public class Complaint {
 
     private LocalDateTime resolvedAt;
 
+// Complaint.java mein add karo
 
-    // ===== Lifecycle Methods =====
+    @Column(nullable = false)
+    private Integer upvoteCount = 0;
+
+    public Integer getUpvoteCount() {
+        return upvoteCount;
+    }
+
+    public void setUpvoteCount(Integer upvoteCount) {
+        this.upvoteCount = upvoteCount;
+    }
 
     @PrePersist
     protected void onCreate() {
