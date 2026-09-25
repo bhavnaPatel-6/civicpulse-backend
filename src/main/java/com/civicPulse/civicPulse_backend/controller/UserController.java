@@ -4,6 +4,7 @@ import com.civicPulse.civicPulse_backend.dto.RewardHistoryResponse;
 import com.civicPulse.civicPulse_backend.dto.UserResponse;
 import com.civicPulse.civicPulse_backend.entity.User;
 import com.civicPulse.civicPulse_backend.repository.UserRepository;
+import com.civicPulse.civicPulse_backend.service.BadgeService;
 import com.civicPulse.civicPulse_backend.service.ComplaintService;
 
 import org.springframework.data.domain.Page;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -19,9 +22,10 @@ public class UserController {
     private final UserRepository userRepository;
     private final ComplaintService complaintService;
 
-    public UserController(UserRepository userRepository, ComplaintService complaintService) {
+    public UserController(UserRepository userRepository, ComplaintService complaintService, BadgeService badgeService) {
         this.userRepository = userRepository;
         this.complaintService = complaintService;
+        this.badgeService = badgeService;
     }
 
     @GetMapping("/me")
@@ -57,5 +61,19 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size);
 
         return complaintService.getMyRewardHistory(email, pageable);
+    }
+
+    // UserController.java mein add karo
+
+    private final BadgeService badgeService;
+
+// Constructor update karo - BadgeService bhi inject karo
+
+    @GetMapping("/me/badges")
+    public List<String> getMyBadges(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return badgeService.calculateBadges(user);
     }
 }

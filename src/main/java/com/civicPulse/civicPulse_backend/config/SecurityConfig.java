@@ -30,7 +30,6 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
 
-                // CORS enable
                 .cors(Customizer.withDefaults())
 
                 .authorizeHttpRequests(auth -> auth
@@ -38,24 +37,21 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/api/test",
+                                "/api/leaderboard",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // ADMIN ONLY
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
 
-                        // AUTHORITY (or ADMIN) ONLY
                         .requestMatchers("/api/authority/**")
                         .hasAnyRole("AUTHORITY", "ADMIN")
 
-                        // koi bhi logged-in user
                         .requestMatchers("/api/categories")
                         .authenticated()
 
-                        // baaki sab authenticated
                         .anyRequest().authenticated()
                 )
 

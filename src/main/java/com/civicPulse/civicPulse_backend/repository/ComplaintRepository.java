@@ -74,8 +74,10 @@ public interface ComplaintRepository
             ComplaintStatus status
     );
 
+    // ComplaintRepository mein ek naya method add karo:
+    long countByCitizenIdAndStatusNot(Long citizenId, ComplaintStatus status);
 // ComplaintRepository.java mein add karo
-
+long countByCitizenIdAndStatusNotIn(Long citizenId, List<ComplaintStatus> excludedStatuses);
     List<Complaint> findByCategoryIdAndCityAndWardAndStatusNotIn(
             Long categoryId, String city, String ward, List<ComplaintStatus> excludedStatuses);
     List<Complaint> findByCategoryIdAndStatusNotIn(Long categoryId, List<ComplaintStatus> excludedStatuses);
