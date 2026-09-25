@@ -1,5 +1,6 @@
 package com.civicPulse.civicPulse_backend.repository;
 
+import com.civicPulse.civicPulse_backend.entity.Role;
 import com.civicPulse.civicPulse_backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -13,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     // UserRepository.java mein add karo
     List<User> findTop10ByOrderByReputationPointsDesc();
+
+    List<User> findByRole(Role role);
 }
