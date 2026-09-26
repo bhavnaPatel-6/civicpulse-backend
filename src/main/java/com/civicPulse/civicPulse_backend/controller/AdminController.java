@@ -1,15 +1,13 @@
 package com.civicPulse.civicPulse_backend.controller;
 
-import com.civicPulse.civicPulse_backend.dto.AuthorityCreateRequest;
-import com.civicPulse.civicPulse_backend.dto.CategoryCreateRequest;
-import com.civicPulse.civicPulse_backend.dto.SLARuleCreateRequest;
-import com.civicPulse.civicPulse_backend.dto.SLARuleUpdateRequest;
+import com.civicPulse.civicPulse_backend.dto.*;
 import com.civicPulse.civicPulse_backend.entity.Category;
 import com.civicPulse.civicPulse_backend.entity.SLARule;
 import com.civicPulse.civicPulse_backend.service.AdminService;
 import com.civicPulse.civicPulse_backend.service.CategoryService;
 import com.civicPulse.civicPulse_backend.service.SLARuleService;
 
+import com.civicPulse.civicPulse_backend.service.StatsService;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -26,13 +24,17 @@ public class AdminController {
     private final SLARuleService slaRuleService;
 
 
+    private final StatsService statsService;
     public AdminController(
             AdminService adminService,
             CategoryService categoryService,
-            SLARuleService slaRuleService) {
+            SLARuleService slaRuleService,
+    StatsService statsService) {
         this.adminService = adminService;
         this.categoryService = categoryService;
         this.slaRuleService = slaRuleService;
+        this.statsService=statsService;
+
     }
 
 
@@ -70,5 +72,10 @@ public class AdminController {
     @GetMapping("/sla-rules")
     public ResponseEntity<List<SLARule>> getAllSlaRules() {
         return ResponseEntity.ok(slaRuleService.getAllRules());
+    }
+
+    @GetMapping("/stats")
+    public AdminStatsResponse getStats() {
+        return statsService.getStats();
     }
 }

@@ -80,6 +80,12 @@ public interface ComplaintRepository
 long countByCitizenIdAndStatusNotIn(Long citizenId, List<ComplaintStatus> excludedStatuses);
     List<Complaint> findByCategoryIdAndCityAndWardAndStatusNotIn(
             Long categoryId, String city, String ward, List<ComplaintStatus> excludedStatuses);
+
+
     List<Complaint> findByCategoryIdAndStatusNotIn(Long categoryId, List<ComplaintStatus> excludedStatuses);
+    long countByStatus(ComplaintStatus status);
+    long countByCategoryId(Long categoryId);
+
+    List<Complaint> findAllByStatus(ComplaintStatus status);
 }
 
