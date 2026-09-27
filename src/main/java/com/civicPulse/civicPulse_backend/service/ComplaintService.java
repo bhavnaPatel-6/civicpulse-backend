@@ -386,6 +386,7 @@ public class ComplaintService {
     }
 
 
+
     // Entity ko Response DTO mein convert karna
     private ComplaintResponse toResponse(Complaint c) {
         return new ComplaintResponse(
@@ -412,5 +413,14 @@ public class ComplaintService {
                 c.getVerifiedAt(),
                 c.getResolvedAt()
         );
+    }
+
+    public Page<ComplaintResponse> getMyAssignedComplaints(String authorityEmail, Pageable pageable) {
+
+        User authority = userRepository.findByEmail(authorityEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return complaintRepository.findByAssignedAuthorityId(authority.getId(), pageable)
+                .map(this::toResponse);
     }
 }

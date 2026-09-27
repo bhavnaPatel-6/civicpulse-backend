@@ -2,11 +2,15 @@ package com.civicPulse.civicPulse_backend.controller;
 
 import com.civicPulse.civicPulse_backend.dto.ComplaintRejectRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResolveRequest;
+import com.civicPulse.civicPulse_backend.dto.ComplaintResponse;
 import com.civicPulse.civicPulse_backend.dto.ComplaintVerifyRequest;
 import com.civicPulse.civicPulse_backend.service.ComplaintService;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -74,6 +78,21 @@ public class AuthorityController {
 
         return ResponseEntity.ok(
                 complaintService.resolveComplaint(authorityEmail, id, request)
+        );
+    }
+
+
+    @GetMapping("/complaints/assigned-to-me")
+    public ResponseEntity<Page<ComplaintResponse>> getMyAssignedComplaints(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        String authorityEmail = authentication.getName();
+        Pageable pageable = PageRequest.of(page, size);
+
+        return ResponseEntity.ok(
+                complaintService.getMyAssignedComplaints(authorityEmail, pageable)
         );
     }
 }
