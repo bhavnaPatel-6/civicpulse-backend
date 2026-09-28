@@ -2,14 +2,16 @@ package com.civicPulse.civicPulse_backend.controller;
 
 import com.civicPulse.civicPulse_backend.dto.*;
 import com.civicPulse.civicPulse_backend.entity.Category;
+import com.civicPulse.civicPulse_backend.entity.ComplaintStatus;
+import com.civicPulse.civicPulse_backend.entity.Department;
 import com.civicPulse.civicPulse_backend.entity.SLARule;
-import com.civicPulse.civicPulse_backend.service.AdminService;
-import com.civicPulse.civicPulse_backend.service.CategoryService;
-import com.civicPulse.civicPulse_backend.service.SLARuleService;
+import com.civicPulse.civicPulse_backend.service.*;
 
-import com.civicPulse.civicPulse_backend.service.StatsService;
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,18 +24,21 @@ public class AdminController {
     private final AdminService adminService;
     private final CategoryService categoryService;
     private final SLARuleService slaRuleService;
-
+    private final ComplaintService complaintService;
 
     private final StatsService statsService;
     public AdminController(
             AdminService adminService,
             CategoryService categoryService,
             SLARuleService slaRuleService,
+            ComplaintService complaintService   ,
+
     StatsService statsService) {
         this.adminService = adminService;
         this.categoryService = categoryService;
         this.slaRuleService = slaRuleService;
         this.statsService=statsService;
+        this.complaintService = complaintService;
 
     }
 
@@ -77,5 +82,24 @@ public class AdminController {
     @GetMapping("/stats")
     public AdminStatsResponse getStats() {
         return statsService.getStats();
+    }
+
+    // Admin: saare departments ki complaints (optional filters)
+    @GetMapping("/complaints")
+    public ResponseEntity<Page<ComplaintResponse>> getAllComplaints(
+            @RequestParam(required = false) ComplaintStatus status,
+            @RequestParam(required = false) Department department,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        return ResponseEntity.ok(
+                complaintService.getAllComplaintsForAdmin(
+                        status,
+                        department,
+                        pageable
+                )
+        );
     }
 }

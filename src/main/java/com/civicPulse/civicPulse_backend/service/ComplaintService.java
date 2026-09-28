@@ -450,4 +450,26 @@ public class ComplaintService {
 
         return complaints.map(this::toResponse);
     }
+
+    // Admin: saare departments ki complaints (optional status + department filter)
+    public Page<ComplaintResponse> getAllComplaintsForAdmin(
+            ComplaintStatus status,
+            Department department,
+            Pageable pageable) {
+
+        Page<Complaint> complaints;
+
+        if (status != null && department != null) {
+            complaints = complaintRepository.findByDepartmentAndStatus(
+                    department, status, pageable);
+        } else if (status != null) {
+            complaints = complaintRepository.findByStatus(status, pageable);
+        } else if (department != null) {
+            complaints = complaintRepository.findByDepartment(department, pageable);
+        } else {
+            complaints = complaintRepository.findAll(pageable);
+        }
+
+        return complaints.map(this::toResponse);
+    }
 }
