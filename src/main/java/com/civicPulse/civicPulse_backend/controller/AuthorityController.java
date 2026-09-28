@@ -4,6 +4,7 @@ import com.civicPulse.civicPulse_backend.dto.ComplaintRejectRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResolveRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResponse;
 import com.civicPulse.civicPulse_backend.dto.ComplaintVerifyRequest;
+import com.civicPulse.civicPulse_backend.entity.ComplaintStatus;
 import com.civicPulse.civicPulse_backend.service.ComplaintService;
 
 import jakarta.validation.Valid;
@@ -80,7 +81,25 @@ public class AuthorityController {
                 complaintService.resolveComplaint(authorityEmail, id, request)
         );
     }
+    // Authority: apne department ki complaints (optional status filter)
+    @GetMapping("/complaints")
+    public ResponseEntity<Page<ComplaintResponse>> getDepartmentComplaints(
+            Authentication authentication,
+            @RequestParam(required = false) ComplaintStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        String authorityEmail = authentication.getName();
+        Pageable pageable = PageRequest.of(page, size);
 
+        return ResponseEntity.ok(
+                complaintService.getComplaintsForAuthority(
+                        authorityEmail,
+                        status,
+                        pageable
+                )
+        );
+    }
 
     @GetMapping("/complaints/assigned-to-me")
     public ResponseEntity<Page<ComplaintResponse>> getMyAssignedComplaints(
@@ -95,4 +114,5 @@ public class AuthorityController {
                 complaintService.getMyAssignedComplaints(authorityEmail, pageable)
         );
     }
+
 }

@@ -423,4 +423,31 @@ public class ComplaintService {
         return complaintRepository.findByAssignedAuthorityId(authority.getId(), pageable)
                 .map(this::toResponse);
     }
+
+
+    // Authority: apne department ki complaints (optional status filter ke saath)
+    public Page<ComplaintResponse> getComplaintsForAuthority(
+            String authorityEmail,
+            ComplaintStatus status,
+            Pageable pageable) {
+
+        User authority = userRepository.findByEmail(authorityEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (authority.getDepartment() == null) {
+            throw new RuntimeException("No department assigned to this user");
+        }
+
+        Page<Complaint> complaints;
+
+        if (status == null) {
+            complaints = complaintRepository.findByDepartment(
+                    authority.getDepartment(), pageable);
+        } else {
+            complaints = complaintRepository.findByDepartmentAndStatus(
+                    authority.getDepartment(), status, pageable);
+        }
+
+        return complaints.map(this::toResponse);
+    }
 }
