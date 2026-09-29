@@ -901,6 +901,7 @@ tbody tr:hover {
                 <th>ID</th>
                 <th>Image</th>
                 <th>Title</th>
+                <th>Address</th>
                 <th>Category</th>
                 <th>Status</th>
                 <th>Citizen</th>
@@ -908,7 +909,7 @@ tbody tr:hover {
               </tr>
             </thead>
             <tbody id="recent-complaints-body">
-              <tr><td colspan="7" class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Loading...</td></tr>
+              <tr><td colspan="8" class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -945,6 +946,7 @@ tbody tr:hover {
                 <th>Issue Image</th>
                 <th>Resolution</th>
                 <th>Title</th>
+                <th>Address</th>
                 <th>Category</th>
                 <th>Department</th>
                 <th>Status</th>
@@ -953,7 +955,7 @@ tbody tr:hover {
               </tr>
             </thead>
             <tbody id="complaints-body">
-              <tr><td colspan="9" class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Loading...</td></tr>
+              <tr><td colspan="10" class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1454,7 +1456,7 @@ async function loadOverview() {
       }
     });
 
-    // Recent complaints
+    // Recent complaints with ADDRESS
     const recent = await api('/api/admin/complaints?size=5');
     const items = Array.isArray(recent) ? recent : (recent.content || []);
     document.getElementById('recent-complaints-body').innerHTML = items.length ? items.map(c => `
@@ -1462,12 +1464,13 @@ async function loadOverview() {
         <td class="mono">#${c.id}</td>
         <td><img src="${esc(c.photoUrl || 'https://via.placeholder.com/60')}" class="complaint-image" onclick="openModal('${esc(c.photoUrl || 'https://via.placeholder.com/60')}')"></td>
         <td><b>${esc(c.title)}</b></td>
+        <td style="max-width:180px;"><span style="font-size:12px;color:var(--gray-600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;" title="${esc(c.address || '')}">${esc(c.address || '—')}</span></td>
         <td>${esc(c.categoryName || '—')}</td>
         <td><span class="status-badge ${STATUS_CONFIG[c.status].class}"><span class="status-dot"></span>${STATUS_CONFIG[c.status].label}</span></td>
         <td>${esc(c.citizenName || '—')}</td>
         <td>${c.createdAt ? c.createdAt.slice(0, 10) : '—'}</td>
       </tr>
-    `).join('') : '<tr><td colspan="7" class="empty-state"><i class="fas fa-inbox"></i><br>No complaints yet</td></tr>';
+    `).join('') : '<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><br>No complaints yet</td></tr>';
 
   } catch (err) {
     document.getElementById('stats-grid').innerHTML = `<div class="error-message show">${esc(err.message)}</div>`;
@@ -1497,7 +1500,7 @@ async function loadComplaints() {
     document.getElementById('page-label').textContent = 'Page ' + (curPage + 1);
 
     if (!items.length) {
-      box.innerHTML = '<tr><td colspan="9" class="empty-state"><i class="fas fa-inbox"></i><br>No complaints match this filter</td></tr>';
+      box.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fas fa-inbox"></i><br>No complaints match this filter</td></tr>';
       return;
     }
 
@@ -1507,6 +1510,7 @@ async function loadComplaints() {
         <td><img src="${esc(c.photoUrl || 'https://via.placeholder.com/60')}" class="complaint-image" onclick="openModal('${esc(c.photoUrl || 'https://via.placeholder.com/60')}')"></td>
         <td>${c.resolutionPhotoUrl ? `<img src="${esc(c.resolutionPhotoUrl)}" class="resolution-image" onclick="openModal('${esc(c.resolutionPhotoUrl)}')">` : '<span style="color:var(--gray-400);font-size:12px;">No image</span>'}</td>
         <td><b>${esc(c.title)}</b></td>
+        <td style="max-width:200px;"><span style="font-size:12px;color:var(--gray-600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;" title="${esc(c.address || '')}">${esc(c.address || '—')}</span></td>
         <td>${esc(c.categoryName || '—')}</td>
         <td>${esc(pretty(c.department))}</td>
         <td><span class="status-badge ${STATUS_CONFIG[c.status].class}"><span class="status-dot"></span>${STATUS_CONFIG[c.status].label}</span></td>
@@ -1515,7 +1519,7 @@ async function loadComplaints() {
       </tr>
     `).join('');
   } catch (err) {
-    box.innerHTML = `<tr><td colspan="9" class="error-message show">${esc(err.message)}</td></tr>`;
+    box.innerHTML = `<tr><td colspan="10" class="error-message show">${esc(err.message)}</td></tr>`;
   }
 }
 
