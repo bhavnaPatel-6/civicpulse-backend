@@ -619,6 +619,7 @@ tbody tr:hover {
 .status-badge.rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 .status-badge.danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 .status-badge.warning { background: rgba(245, 158, 11, 0.1); color: var(--accent); }
+.status-badge.primary { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
 
 .status-dot {
   width: 8px;
@@ -705,6 +706,181 @@ tbody tr:hover {
 .view-section.active {
   display: block;
   animation: fadeIn 0.4s ease;
+}
+
+/* Authority Modal */
+.authority-modal-card {
+  width: min(1400px, 94vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  background: var(--light);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: var(--shadow-xl);
+  animation: zoomIn 0.25s ease;
+}
+
+.authority-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.authority-modal-header h2 {
+  color: var(--gray-800);
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  margin: 4px 0;
+}
+
+.authority-modal-header p {
+  color: var(--gray-500);
+  font-size: 13px;
+}
+
+.modal-overline {
+  color: var(--primary) !important;
+  font-size: 11px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modal-close-button {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 12px;
+  color: var(--gray-700);
+  background: var(--gray-100);
+  cursor: pointer;
+  font-size: 17px;
+}
+
+.modal-close-button:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.authority-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.authority-detail-stat {
+  padding: 18px;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  background: var(--gray-100);
+}
+
+.authority-detail-stat .value {
+  color: var(--gray-800);
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.authority-detail-stat .label {
+  color: var(--gray-500);
+  font-size: 11px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.authority-detail-toolbar {
+  margin-bottom: 18px;
+}
+
+.detail-filter-btn {
+  width: auto;
+  padding: 9px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  color: var(--gray-700);
+  background: var(--light);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.detail-filter-btn:hover,
+.detail-filter-btn.active {
+  color: white;
+  border-color: var(--primary);
+  background: var(--primary);
+}
+
+.authority-address {
+  display: block;
+  max-width: 220px;
+  overflow: hidden;
+  color: var(--gray-600);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sla-mini-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sla-mini-badge.breached {
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.sla-mini-badge.on-track {
+  color: var(--secondary);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.sla-mini-badge.unknown {
+  color: var(--gray-500);
+  background: var(--gray-100);
+}
+
+.resolution-rate {
+  color: var(--secondary);
+  font-weight: 700;
+}
+
+.authority-action-btn {
+  width: auto;
+  padding: 9px 13px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .authority-detail-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .authority-modal-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .authority-detail-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .authority-modal-header {
+    flex-direction: column;
+  }
 }
 
 /* Responsive */
@@ -823,6 +999,10 @@ tbody tr:hover {
         <i class="fas fa-exclamation-circle"></i>
         <span>Complaints</span>
       </div>
+      <div class="nav-item" data-view="authorities">
+        <i class="fas fa-users-cog"></i>
+        <span>Authority Workload</span>
+      </div>
       <div class="nav-item" data-view="sla">
         <i class="fas fa-clock"></i>
         <span>SLA Rules</span>
@@ -830,10 +1010,6 @@ tbody tr:hover {
       <div class="nav-item" data-view="categories">
         <i class="fas fa-tags"></i>
         <span>Categories</span>
-      </div>
-      <div class="nav-item" data-view="authorities">
-        <i class="fas fa-user-tie"></i>
-        <span>Authorities</span>
       </div>
     </nav>
 
@@ -971,6 +1147,147 @@ tbody tr:hover {
       </div>
     </section>
 
+    <!-- Authority Workload Section -->
+    <section class="view-section" id="view-authorities">
+      <div class="page-header">
+        <h1><i class="fas fa-users-cog"></i> Authority Workload</h1>
+        <p>Monitor authority-wise assignments, pending work, progress, and resolutions</p>
+      </div>
+
+      <div class="stats-grid" id="authority-summary-stats">
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="authority-total-count">—</div>
+              <div class="stat-label">Total Authorities</div>
+            </div>
+            <div class="stat-icon primary">
+              <i class="fas fa-users"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="authority-assigned-count">—</div>
+              <div class="stat-label">Total Assigned</div>
+            </div>
+            <div class="stat-icon primary">
+              <i class="fas fa-folder-open"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="authority-pending-count">—</div>
+              <div class="stat-label">Pending Complaints</div>
+            </div>
+            <div class="stat-icon warning">
+              <i class="fas fa-clock"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="authority-progress-count">—</div>
+              <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-icon primary">
+              <i class="fas fa-spinner"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <div>
+              <div class="stat-value" id="authority-resolved-count">—</div>
+              <div class="stat-label">Resolved</div>
+            </div>
+            <div class="stat-icon success">
+              <i class="fas fa-check-circle"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card" style="margin-bottom:32px;">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-bar"></i> Authority Workload Comparison</h3>
+
+          <button
+            class="btn btn-primary"
+            id="refresh-authorities"
+            type="button"
+            style="width:auto;padding:10px 16px;"
+          >
+            <i class="fas fa-sync-alt"></i>
+            Refresh
+          </button>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="authorityWorkloadChart"></canvas>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <h3>
+            <i class="fas fa-table"></i>
+            Authority-wise Complaint Summary
+          </h3>
+
+          <div class="filter-group">
+            <select class="filter-select" id="authority-department-filter">
+              <option value="">All Departments</option>
+            </select>
+
+            <select class="filter-select" id="authority-sort-filter">
+              <option value="assigned">Sort: Total Assigned</option>
+              <option value="pending">Sort: Pending</option>
+              <option value="progress">Sort: In Progress</option>
+              <option value="resolved">Sort: Resolved</option>
+              <option value="name">Sort: Name</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Authority</th>
+                <th>Department</th>
+                <th>Total Assigned</th>
+                <th>Pending</th>
+                <th>In Progress</th>
+                <th>Resolved</th>
+                <th>Resolution Rate</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="authorities-body">
+              <tr>
+                <td colspan="9" class="loading-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <br>
+                  Loading authority workload...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- SLA Rules Section -->
     <section class="view-section" id="view-sla">
       <div class="page-header">
@@ -1087,64 +1404,117 @@ tbody tr:hover {
         </div>
       </div>
     </section>
-
-    <!-- Authorities Section -->
-    <section class="view-section" id="view-authorities">
-      <div class="page-header">
-        <h1><i class="fas fa-user-tie"></i> Authorities Management</h1>
-        <p>Register department officials</p>
-      </div>
-
-      <div class="table-card">
-        <div class="table-header">
-          <h3><i class="fas fa-user-plus"></i> Register New Authority</h3>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
-          <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="auth-name" class="filter-select" style="width: 100%;">
-          </div>
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" id="auth-email" class="filter-select" style="width: 100%;">
-          </div>
-          <div class="form-group">
-            <label>Phone Number</label>
-            <input type="text" id="auth-phone" placeholder="10-digit" class="filter-select" style="width: 100%;">
-          </div>
-          <div class="form-group">
-            <label>Department</label>
-            <select class="filter-select" id="auth-department" style="width: 100%;"></select>
-          </div>
-          <div class="form-group">
-            <label>City</label>
-            <input type="text" id="auth-city" class="filter-select" style="width: 100%;">
-          </div>
-          <div class="form-group">
-            <label>Ward</label>
-            <input type="text" id="auth-ward" class="filter-select" style="width: 100%;">
-          </div>
-          <div class="form-group" style="grid-column: 1/-1;">
-            <label>Password</label>
-            <div style="display: flex; gap: 10px;">
-              <input type="text" id="auth-password" class="filter-select" style="flex: 1;" readonly>
-              <button class="btn btn-primary" id="auth-genpass" type="button" style="width: auto;">
-                <i class="fas fa-sync"></i> Generate
-              </button>
-            </div>
-            <p style="font-size:11px;color:var(--gray-500);margin-top:6px;">
-              <i class="fas fa-info-circle"></i> Click Generate to create a secure password
-            </p>
-          </div>
-        </div>
-        <div id="auth-error" class="error-message"></div>
-        <button class="btn btn-primary" id="auth-submit">
-          <i class="fas fa-user-plus"></i> Register Authority
-        </button>
-        <div id="auth-receipt" style="margin-top: 20px;"></div>
-      </div>
-    </section>
   </main>
+</div>
+
+<!-- Authority Complaints Modal -->
+<div class="modal" id="authority-complaints-modal">
+  <div class="authority-modal-card">
+    <div class="authority-modal-header">
+      <div>
+        <p class="modal-overline">Authority complaint register</p>
+        <h2 id="modal-authority-name">Authority Complaints</h2>
+        <p id="modal-authority-department"></p>
+      </div>
+
+      <button
+        class="modal-close-button"
+        type="button"
+        onclick="closeAuthorityModal()"
+        aria-label="Close"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="authority-detail-stats" id="authority-detail-stats"></div>
+
+    <div class="authority-detail-toolbar">
+      <div class="filter-group">
+        <button
+          class="detail-filter-btn active"
+          type="button"
+          data-detail-status="ALL"
+          onclick="filterAuthorityComplaints('ALL', this)"
+        >
+          All
+        </button>
+
+        <button
+          class="detail-filter-btn"
+          type="button"
+          data-detail-status="PENDING_VERIFICATION"
+          onclick="filterAuthorityComplaints('PENDING_VERIFICATION', this)"
+        >
+          Pending
+        </button>
+
+        <button
+          class="detail-filter-btn"
+          type="button"
+          data-detail-status="VERIFIED"
+          onclick="filterAuthorityComplaints('VERIFIED', this)"
+        >
+          Verified
+        </button>
+
+        <button
+          class="detail-filter-btn"
+          type="button"
+          data-detail-status="IN_PROGRESS"
+          onclick="filterAuthorityComplaints('IN_PROGRESS', this)"
+        >
+          In Progress
+        </button>
+
+        <button
+          class="detail-filter-btn"
+          type="button"
+          data-detail-status="RESOLVED"
+          onclick="filterAuthorityComplaints('RESOLVED', this)"
+        >
+          Resolved
+        </button>
+
+        <button
+          class="detail-filter-btn"
+          type="button"
+          data-detail-status="REJECTED"
+          onclick="filterAuthorityComplaints('REJECTED', this)"
+        >
+          Rejected
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Issue Image</th>
+            <th>Title</th>
+            <th>Address</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>SLA Deadline</th>
+            <th>SLA Status</th>
+            <th>Filed</th>
+          </tr>
+        </thead>
+
+        <tbody id="authority-complaints-body">
+          <tr>
+            <td colspan="9" class="loading-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <br>
+              Loading complaints...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- Image Modal -->
@@ -1178,6 +1548,11 @@ let lastPageHadResults = true;
 let categoryChart = null;
 let statusChart = null;
 let categoriesCache = [];
+let authoritiesLoadedOnce = false;
+let authorityWorkloadData = [];
+let currentAuthority = null;
+let currentAuthorityComplaints = [];
+let authorityWorkloadChart = null;
 
 // Utility functions
 function pretty(s) {
@@ -1193,6 +1568,35 @@ function esc(s) {
 
 function getInitials(name) {
   return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'A';
+}
+
+function escapeJs(value) {
+  return String(value || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+}
+
+function formatDate(value) {
+  if (!value) return '—';
+  try {
+    return new Date(value).toLocaleDateString('en-IN');
+  } catch {
+    return String(value).slice(0, 10);
+  }
+}
+
+function formatDateTime(value) {
+  if (!value) return '—';
+  try {
+    return new Date(value).toLocaleString('en-IN', {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    });
+  } catch {
+    return String(value).replace('T', ' ').slice(0, 16);
+  }
 }
 
 // API call
@@ -1287,14 +1691,38 @@ function enterShell(me) {
 
 // ========== NAVIGATION ==========
 function switchView(viewName) {
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-  document.querySelector(`.nav-item[data-view="${viewName}"]`).classList.add('active');
-  document.getElementById(`view-${viewName}`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+  });
 
-  if (viewName === 'complaints' && !complaintsLoadedOnce) loadComplaints();
-  if (viewName === 'sla' && !slaLoadedOnce) loadSla();
-  if (viewName === 'categories' && !catLoadedOnce) loadCategories();
+  document.querySelectorAll('.view-section').forEach(v => {
+    v.classList.remove('active');
+  });
+
+  const navItem = document.querySelector(
+    `.nav-item[data-view="${viewName}"]`
+  );
+
+  const viewSection = document.getElementById(`view-${viewName}`);
+
+  if (navItem) navItem.classList.add('active');
+  if (viewSection) viewSection.classList.add('active');
+
+  if (viewName === 'complaints' && !complaintsLoadedOnce) {
+    loadComplaints();
+  }
+
+  if (viewName === 'authorities' && !authoritiesLoadedOnce) {
+    loadAuthorities();
+  }
+
+  if (viewName === 'sla' && !slaLoadedOnce) {
+    loadSla();
+  }
+
+  if (viewName === 'categories' && !catLoadedOnce) {
+    loadCategories();
+  }
 }
 
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -1310,7 +1738,7 @@ function populateSelects() {
   });
 
   DEPARTMENTS.forEach(d => {
-    ['f-department', 'cat-department', 'auth-department'].forEach(id => {
+    ['f-department', 'cat-department'].forEach(id => {
       const o = document.createElement('option');
       o.value = d;
       o.textContent = pretty(d);
@@ -1738,86 +2166,602 @@ document.getElementById('cat-submit').addEventListener('click', async () => {
   }
 });
 
-// ========== AUTHORITIES ==========
-document.getElementById('auth-genpass').addEventListener('click', function() {
-  console.log('Generate password clicked');
-  
-  const lower = 'abcdefghijkmnpqrstuvwxyz';
-  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const digit = '23456789';
-  const special = '@#$%^&*!';
-  const all = lower + upper + digit + special;
-  
-  const pick = s => s[Math.floor(Math.random() * s.length)];
-  
-  let pw = [pick(lower), pick(upper), pick(digit), pick(special)];
-  for (let i = 0; i < 8; i++) {
-    pw.push(pick(all));
-  }
-  
-  // Shuffle
-  pw = pw.sort(() => Math.random() - 0.5).join('');
-  
-  const passInput = document.getElementById('auth-password');
-  passInput.value = pw;
-  passInput.style.background = 'rgba(16,185,129,0.1)';
-  
-  // Visual feedback
-  const btn = document.getElementById('auth-genpass');
-  const originalText = btn.innerHTML;
-  btn.innerHTML = '<i class="fas fa-check"></i> Generated!';
-  setTimeout(() => {
-    btn.innerHTML = originalText;
-    passInput.style.background = '';
-  }, 2000);
-});
+// ========== AUTHORITY WORKLOAD ==========
 
-document.getElementById('auth-submit').addEventListener('click', async () => {
-  const errBox = document.getElementById('auth-error');
-  errBox.classList.remove('show');
-  document.getElementById('auth-receipt').innerHTML = '';
-  const body = {
-    name: document.getElementById('auth-name').value.trim(),
-    email: document.getElementById('auth-email').value.trim(),
-    phoneNumber: document.getElementById('auth-phone').value.trim(),
-    city: document.getElementById('auth-city').value.trim(),
-    ward: document.getElementById('auth-ward').value.trim(),
-    department: document.getElementById('auth-department').value,
-    password: document.getElementById('auth-password').value
-  };
-  for (const k of ['name', 'email', 'phoneNumber', 'city', 'ward', 'password']) {
-    if (!body[k]) {
-      errBox.textContent = 'All fields are required.';
-      errBox.classList.add('show');
-      return;
-    }
-  }
-  const btn = document.getElementById('auth-submit');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
+async function loadAuthorities() {
+  authoritiesLoadedOnce = true;
+
+  const box = document.getElementById('authorities-body');
+
+  box.innerHTML = `
+    <tr>
+      <td colspan="9" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <br>
+        Loading authority workload...
+      </td>
+    </tr>
+  `;
+
   try {
-    await api('/api/admin/authorities', { method: 'POST', body: JSON.stringify(body) });
-    document.getElementById('auth-receipt').innerHTML = `
-      <div style="background:rgba(16,185,129,0.1);border:1px solid var(--secondary);padding:16px;border-radius:10px;margin-top:20px;">
-        <h4 style="color:var(--secondary);margin-bottom:12px;"><i class="fas fa-check-circle"></i> Authority Registered Successfully!</h4>
-        <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:13px;">
-          <b>Name:</b><span>${esc(body.name)}</span>
-          <b>Email:</b><span>${esc(body.email)}</span>
-          <b>Department:</b><span>${esc(pretty(body.department))}</span>
-          <b>Password:</b><span class="mono" style="background:var(--gray-100);padding:4px 8px;border-radius:4px;">${esc(body.password)}</span>
-        </div>
-        <p style="font-size:11px;color:var(--gray-500);margin-top:12px;"><i class="fas fa-exclamation-triangle"></i> Share this password securely — it will not be shown again.</p>
+    const data = await api('/api/admin/authorities/workload');
+
+    authorityWorkloadData = Array.isArray(data) ? data : [];
+
+    populateAuthorityDepartmentFilter(authorityWorkloadData);
+    renderAuthoritySummary(authorityWorkloadData);
+    renderAuthorityChart(authorityWorkloadData);
+    renderAuthorityTable();
+
+  } catch (err) {
+    console.error('Authority workload error:', err);
+
+    box.innerHTML = `
+      <tr>
+        <td colspan="9" class="error-message show">
+          ${esc(err.message)}
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function populateAuthorityDepartmentFilter(data) {
+  const select = document.getElementById(
+    'authority-department-filter'
+  );
+
+  const currentValue = select.value;
+
+  const departments = [
+    ...new Set(
+      data
+        .map(item => item.department)
+        .filter(Boolean)
+    )
+  ].sort();
+
+  select.innerHTML = `
+    <option value="">All Departments</option>
+    ${departments.map(department => `
+      <option value="${esc(department)}">
+        ${esc(pretty(department))}
+      </option>
+    `).join('')}
+  `;
+
+  select.value = currentValue;
+}
+
+function getFilteredAuthorityData() {
+  const department = document.getElementById(
+    'authority-department-filter'
+  ).value;
+
+  const sortBy = document.getElementById(
+    'authority-sort-filter'
+  ).value;
+
+  let data = authorityWorkloadData.filter(item => {
+    return !department || item.department === department;
+  });
+
+  data.sort((a, b) => {
+    if (sortBy === 'name') {
+      return String(a.authorityName || '')
+        .localeCompare(String(b.authorityName || ''));
+    }
+
+    if (sortBy === 'pending') {
+      return (b.pendingCount || 0) - (a.pendingCount || 0);
+    }
+
+    if (sortBy === 'progress') {
+      return (b.inProgressCount || 0) - (a.inProgressCount || 0);
+    }
+
+    if (sortBy === 'resolved') {
+      return (b.resolvedCount || 0) - (a.resolvedCount || 0);
+    }
+
+    return (b.totalAssigned || 0) - (a.totalAssigned || 0);
+  });
+
+  return data;
+}
+
+function renderAuthoritySummary(data) {
+  const totalAuthorities = data.length;
+
+  const totalAssigned = data.reduce(
+    (sum, item) => sum + (item.totalAssigned || 0),
+    0
+  );
+
+  const totalPending = data.reduce(
+    (sum, item) => sum + (item.pendingCount || 0),
+    0
+  );
+
+  const totalProgress = data.reduce(
+    (sum, item) => sum + (item.inProgressCount || 0),
+    0
+  );
+
+  const totalResolved = data.reduce(
+    (sum, item) => sum + (item.resolvedCount || 0),
+    0
+  );
+
+  document.getElementById('authority-total-count')
+    .textContent = totalAuthorities;
+
+  document.getElementById('authority-assigned-count')
+    .textContent = totalAssigned;
+
+  document.getElementById('authority-pending-count')
+    .textContent = totalPending;
+
+  document.getElementById('authority-progress-count')
+    .textContent = totalProgress;
+
+  document.getElementById('authority-resolved-count')
+    .textContent = totalResolved;
+}
+
+function renderAuthorityChart(data) {
+  const canvas = document.getElementById(
+    'authorityWorkloadChart'
+  );
+
+  if (!canvas) return;
+
+  if (authorityWorkloadChart) {
+    authorityWorkloadChart.destroy();
+  }
+
+  const chartData = getFilteredAuthorityData();
+
+  authorityWorkloadChart = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+
+    data: {
+      labels: chartData.map(item => item.authorityName),
+
+      datasets: [
+        {
+          label: 'Pending',
+          data: chartData.map(item => item.pendingCount || 0),
+          backgroundColor: '#F59E0B',
+          borderRadius: 6
+        },
+        {
+          label: 'In Progress',
+          data: chartData.map(item => item.inProgressCount || 0),
+          backgroundColor: '#3B82F6',
+          borderRadius: 6
+        },
+        {
+          label: 'Resolved',
+          data: chartData.map(item => item.resolvedCount || 0),
+          backgroundColor: '#10B981',
+          borderRadius: 6
+        }
+      ]
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      },
+
+      scales: {
+        x: {
+          stacked: true,
+          ticks: {
+            color: '#6B7280',
+            maxRotation: 45,
+            minRotation: 0
+          }
+        },
+
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          ticks: {
+            precision: 0,
+            color: '#6B7280'
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderAuthorityTable() {
+  const box = document.getElementById('authorities-body');
+  const data = getFilteredAuthorityData();
+
+  if (!data.length) {
+    box.innerHTML = `
+      <tr>
+        <td colspan="9" class="empty-state">
+          <i class="fas fa-users-slash"></i>
+          <br>
+          No authorities found
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  box.innerHTML = data.map(authority => {
+    const total = authority.totalAssigned || 0;
+    const resolved = authority.resolvedCount || 0;
+
+    const resolutionRate = total > 0
+      ? Math.round((resolved / total) * 100)
+      : 0;
+
+    return `
+      <tr>
+        <td class="mono">#${authority.authorityId}</td>
+
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="user-avatar">
+              ${esc(getInitials(authority.authorityName))}
+            </div>
+            <b>${esc(authority.authorityName || 'Unknown')}</b>
+          </div>
+        </td>
+
+        <td>
+          <span class="status-badge primary">
+            ${esc(pretty(authority.department))}
+          </span>
+        </td>
+
+        <td>
+          <strong>${total}</strong>
+        </td>
+
+        <td>
+          <span class="status-badge pending">
+            ${authority.pendingCount || 0}
+          </span>
+        </td>
+
+        <td>
+          <span class="status-badge progress">
+            ${authority.inProgressCount || 0}
+          </span>
+        </td>
+
+        <td>
+          <span class="status-badge resolved">
+            ${authority.resolvedCount || 0}
+          </span>
+        </td>
+
+        <td>
+          <span class="resolution-rate">
+            ${resolutionRate}%
+          </span>
+        </td>
+
+        <td>
+          <button
+            class="btn btn-primary authority-action-btn"
+            type="button"
+            onclick="viewAuthorityComplaints(
+              ${Number(authority.authorityId)},
+              '${escapeJs(authority.authorityName)}',
+              '${escapeJs(authority.department)}'
+            )"
+          >
+            <i class="fas fa-eye"></i>
+            View Complaints
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+document.getElementById('authority-department-filter')
+  .addEventListener('change', () => {
+    renderAuthorityTable();
+    renderAuthorityChart(authorityWorkloadData);
+  });
+
+document.getElementById('authority-sort-filter')
+  .addEventListener('change', () => {
+    renderAuthorityTable();
+    renderAuthorityChart(authorityWorkloadData);
+  });
+
+document.getElementById('refresh-authorities')
+  .addEventListener('click', () => {
+    loadAuthorities();
+  });
+
+async function viewAuthorityComplaints(
+  authorityId,
+  authorityName,
+  department
+) {
+  currentAuthority = {
+    authorityId,
+    authorityName,
+    department
+  };
+
+  document.getElementById('modal-authority-name')
+    .textContent = `${authorityName}'s Complaints`;
+
+  document.getElementById('modal-authority-department')
+    .textContent = `${pretty(department)} • Authority ID #${authorityId}`;
+
+  document.getElementById('authority-complaints-modal')
+    .classList.add('active');
+
+  document.getElementById('authority-complaints-body')
+    .innerHTML = `
+      <tr>
+        <td colspan="9" class="loading-state">
+          <i class="fas fa-spinner fa-spin"></i>
+          <br>
+          Loading complaints...
+        </td>
+      </tr>
+    `;
+
+  try {
+    const data = await api(
+      '/api/admin/complaints?page=0&size=1000'
+    );
+
+    const complaints = Array.isArray(data)
+      ? data
+      : (data.content || []);
+
+    currentAuthorityComplaints = complaints.filter(complaint => {
+      const assignedName = String(
+        complaint.assignedAuthorityName || ''
+      ).trim().toLowerCase();
+
+      const targetName = String(
+        authorityName || ''
+      ).trim().toLowerCase();
+
+      return assignedName === targetName;
+    });
+
+    renderAuthorityDetailStats(
+      currentAuthorityComplaints
+    );
+
+    filterAuthorityComplaints('ALL');
+
+  } catch (err) {
+    document.getElementById('authority-complaints-body')
+      .innerHTML = `
+        <tr>
+          <td colspan="9" class="error-message show">
+            ${esc(err.message)}
+          </td>
+        </tr>
+      `;
+  }
+}
+
+function renderAuthorityDetailStats(complaints) {
+  const total = complaints.length;
+
+  const pending = complaints.filter(item =>
+    item.status === 'PENDING_VERIFICATION'
+  ).length;
+
+  const verified = complaints.filter(item =>
+    item.status === 'VERIFIED'
+  ).length;
+
+  const progress = complaints.filter(item =>
+    item.status === 'IN_PROGRESS'
+  ).length;
+
+  const resolved = complaints.filter(item =>
+    item.status === 'RESOLVED' ||
+    item.status === 'CLOSED'
+  ).length;
+
+  document.getElementById('authority-detail-stats')
+    .innerHTML = `
+      <div class="authority-detail-stat">
+        <div class="value">${total}</div>
+        <div class="label">Total Assigned</div>
+      </div>
+
+      <div class="authority-detail-stat">
+        <div class="value">${pending}</div>
+        <div class="label">Pending</div>
+      </div>
+
+      <div class="authority-detail-stat">
+        <div class="value">${verified + progress}</div>
+        <div class="label">Active Work</div>
+      </div>
+
+      <div class="authority-detail-stat">
+        <div class="value">${resolved}</div>
+        <div class="label">Resolved</div>
       </div>
     `;
-    ['auth-name', 'auth-email', 'auth-phone', 'auth-city', 'auth-ward', 'auth-password'].forEach(id => document.getElementById(id).value = '');
-  } catch (err) {
-    errBox.textContent = err.message;
-    errBox.classList.add('show');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-user-plus"></i> Register Authority';
+}
+
+function filterAuthorityComplaints(status, button) {
+  const tbody = document.getElementById(
+    'authority-complaints-body'
+  );
+
+  document.querySelectorAll('.detail-filter-btn')
+    .forEach(item => item.classList.remove('active'));
+
+  if (button) {
+    button.classList.add('active');
+  } else {
+    const defaultButton = document.querySelector(
+      '.detail-filter-btn[data-detail-status="ALL"]'
+    );
+
+    if (defaultButton) {
+      defaultButton.classList.add('active');
+    }
   }
-});
+
+  let filtered = currentAuthorityComplaints;
+
+  if (status !== 'ALL') {
+    filtered = filtered.filter(item => {
+      if (status === 'RESOLVED') {
+        return item.status === 'RESOLVED' ||
+          item.status === 'CLOSED';
+      }
+
+      return item.status === status;
+    });
+  }
+
+  if (!filtered.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <br>
+          No complaints found for this filter
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(complaint => {
+    const statusConfig =
+      STATUS_CONFIG[complaint.status] ||
+      STATUS_CONFIG.PENDING_VERIFICATION;
+
+    const deadline = complaint.slaDeadline
+      ? formatDateTime(complaint.slaDeadline)
+      : '—';
+
+    let slaHtml;
+
+    if (complaint.slaBreached === true) {
+      slaHtml = `
+        <span class="sla-mini-badge breached">
+          <i class="fas fa-exclamation-triangle"></i>
+          Breached
+        </span>
+      `;
+    } else if (complaint.slaBreached === false) {
+      slaHtml = `
+        <span class="sla-mini-badge on-track">
+          <i class="fas fa-check-circle"></i>
+          On Track
+        </span>
+      `;
+    } else {
+      slaHtml = `
+        <span class="sla-mini-badge unknown">
+          No SLA
+        </span>
+      `;
+    }
+
+    const image = complaint.photoUrl
+      ? `
+        <img
+          src="${esc(complaint.photoUrl)}"
+          class="complaint-image"
+          alt="Complaint"
+          onclick="openModal('${esc(complaint.photoUrl)}')"
+        >
+      `
+      : '—';
+
+    return `
+      <tr>
+        <td class="mono">#${complaint.id}</td>
+
+        <td>${image}</td>
+
+        <td>
+          <b>${esc(complaint.title || '—')}</b>
+        </td>
+
+        <td>
+          <span
+            class="authority-address"
+            title="${esc(complaint.address || '')}"
+          >
+            ${esc(complaint.address || '—')}
+          </span>
+        </td>
+
+        <td>
+          ${esc(complaint.categoryName || '—')}
+        </td>
+
+        <td>
+          <span class="status-badge ${statusConfig.class}">
+            <span class="status-dot"></span>
+            ${esc(statusConfig.label)}
+          </span>
+        </td>
+
+        <td class="mono">
+          ${deadline}
+        </td>
+
+        <td>
+          ${slaHtml}
+        </td>
+
+        <td>
+          ${formatDate(complaint.createdAt)}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function closeAuthorityModal() {
+  document.getElementById('authority-complaints-modal')
+    .classList.remove('active');
+
+  currentAuthority = null;
+  currentAuthorityComplaints = [];
+}
+
+document.getElementById('authority-complaints-modal')
+  .addEventListener('click', event => {
+    if (event.target.id === 'authority-complaints-modal') {
+      closeAuthorityModal();
+    }
+  });
 
 // ========== IMAGE MODAL ==========
 function openModal(src) {
