@@ -107,4 +107,14 @@ public class AdminController {
     public ResponseEntity<List<AuthorityWorkloadResponse>> getAuthorityWorkload() {
         return ResponseEntity.ok(statsService.getAuthorityWorkload());
     }
+    EmailService emailService;
+    @GetMapping("/api/test-email")
+    public String testEmail() {
+        emailService.sendEmail(
+                "your-email@gmail.com",
+                "CivicPulse Email Test",
+                "This is a test email from CivicPulse backend."
+        );
+        return "Email sent attempt";
+    }
 }

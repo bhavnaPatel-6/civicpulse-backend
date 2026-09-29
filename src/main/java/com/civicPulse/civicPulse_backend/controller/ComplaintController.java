@@ -125,4 +125,5 @@ public class ComplaintController {
                 complaintService.getAllComplaintsForAdmin(status, department, pageable)
         );
     }
+
 }
