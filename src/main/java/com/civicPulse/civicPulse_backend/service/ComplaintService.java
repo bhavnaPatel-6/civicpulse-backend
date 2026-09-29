@@ -388,7 +388,18 @@ public class ComplaintService {
 
 
     // Entity ko Response DTO mein convert karna
+// Entity ko Response DTO mein convert karna
     private ComplaintResponse toResponse(Complaint c) {
+
+        LocalDateTime slaDeadline = null;
+        Boolean slaBreached = null;
+
+        var trackerOpt = slaTrackerRepository.findByComplaintId(c.getId());
+        if (trackerOpt.isPresent()) {
+            slaDeadline = trackerOpt.get().getDeadline();
+            slaBreached = trackerOpt.get().getBreached();
+        }
+
         return new ComplaintResponse(
                 c.getId(),
                 c.getTitle(),
@@ -409,11 +420,14 @@ public class ComplaintService {
                 c.getResolutionNote(),
                 c.getResolutionPhotoUrl(),
                 c.getUpvoteCount(),
+                slaDeadline,
+                slaBreached,
                 c.getCreatedAt(),
                 c.getVerifiedAt(),
                 c.getResolvedAt()
         );
     }
+
 
     public Page<ComplaintResponse> getMyAssignedComplaints(String authorityEmail, Pageable pageable) {
 

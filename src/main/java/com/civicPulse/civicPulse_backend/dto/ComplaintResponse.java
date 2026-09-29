@@ -27,6 +27,8 @@ public class ComplaintResponse {
     private String resolutionNote;
     private String resolutionPhotoUrl;
     private Integer upvoteCount;
+    private LocalDateTime slaDeadline;
+    private Boolean slaBreached;
     private LocalDateTime createdAt;
     private LocalDateTime verifiedAt;
     private LocalDateTime resolvedAt;
@@ -51,6 +53,8 @@ public class ComplaintResponse {
             String resolutionNote,
             String resolutionPhotoUrl,
             Integer upvoteCount,
+            LocalDateTime slaDeadline,
+            Boolean slaBreached,
             LocalDateTime createdAt,
             LocalDateTime verifiedAt,
             LocalDateTime resolvedAt) {
@@ -74,6 +78,8 @@ public class ComplaintResponse {
         this.resolutionNote = resolutionNote;
         this.resolutionPhotoUrl = resolutionPhotoUrl;
         this.upvoteCount = upvoteCount;
+        this.slaDeadline = slaDeadline;
+        this.slaBreached = slaBreached;
         this.createdAt = createdAt;
         this.verifiedAt = verifiedAt;
         this.resolvedAt = resolvedAt;
@@ -100,6 +106,8 @@ public class ComplaintResponse {
     public String getResolutionNote() { return resolutionNote; }
     public String getResolutionPhotoUrl() { return resolutionPhotoUrl; }
     public Integer getUpvoteCount() { return upvoteCount; }
+    public LocalDateTime getSlaDeadline() { return slaDeadline; }
+    public Boolean getSlaBreached() { return slaBreached; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getVerifiedAt() { return verifiedAt; }
     public LocalDateTime getResolvedAt() { return resolvedAt; }
