@@ -2,6 +2,7 @@ package com.civicPulse.civicPulse_backend.controller;
 
 import com.civicPulse.civicPulse_backend.dto.ComplaintCreateRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResponse;
+import com.civicPulse.civicPulse_backend.entity.ComplaintStatus;
 import com.civicPulse.civicPulse_backend.entity.Department;
 import com.civicPulse.civicPulse_backend.service.ComplaintService;
 
@@ -108,6 +109,20 @@ public class ComplaintController {
 
         return ResponseEntity.ok(
                 complaintService.getComplaintsByDepartment(department, pageable)
+        );
+    }
+    // Koi bhi logged-in user: saari complaints, sab department milake (optional filters)
+    @GetMapping("/all")
+    public ResponseEntity<Page<ComplaintResponse>> getAllComplaintsPublic(
+            @RequestParam(required = false) ComplaintStatus status,
+            @RequestParam(required = false) Department department,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        return ResponseEntity.ok(
+                complaintService.getAllComplaintsForAdmin(status, department, pageable)
         );
     }
 }
