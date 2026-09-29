@@ -1,11 +1,15 @@
 package com.civicPulse.civicPulse_backend.service;
 
 import com.civicPulse.civicPulse_backend.dto.AdminStatsResponse;
+import com.civicPulse.civicPulse_backend.dto.AuthorityWorkloadResponse;
 import com.civicPulse.civicPulse_backend.entity.Category;
 import com.civicPulse.civicPulse_backend.entity.Complaint;
 import com.civicPulse.civicPulse_backend.entity.ComplaintStatus;
+import com.civicPulse.civicPulse_backend.entity.Role;
+import com.civicPulse.civicPulse_backend.entity.User;
 import com.civicPulse.civicPulse_backend.repository.CategoryRepository;
 import com.civicPulse.civicPulse_backend.repository.ComplaintRepository;
+import com.civicPulse.civicPulse_backend.repository.UserRepository;
 
 import org.springframework.stereotype.Service;
 
@@ -20,10 +24,15 @@ public class StatsService {
 
     private final ComplaintRepository complaintRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
-    public StatsService(ComplaintRepository complaintRepository, CategoryRepository categoryRepository) {
+    public StatsService(
+            ComplaintRepository complaintRepository,
+            CategoryRepository categoryRepository,
+            UserRepository userRepository) {
         this.complaintRepository = complaintRepository;
         this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
     }
 
     public AdminStatsResponse getStats() {
@@ -68,5 +77,26 @@ public class StatsService {
         }
 
         return count > 0 ? Math.round((totalHours / count) * 10.0) / 10.0 : null;
+    }
+
+
+    // Admin: har authority ke paas kitni complaints hain (status-wise breakdown)
+    public List<AuthorityWorkloadResponse> getAuthorityWorkload() {
+
+        List<User> authorities = userRepository.findByRole(Role.AUTHORITY);
+
+        return authorities.stream()
+                .map(authority -> new AuthorityWorkloadResponse(
+                        authority.getId(),
+                        authority.getName(),
+                        authority.getDepartment() != null ? authority.getDepartment().name() : null,
+                        complaintRepository.countByAssignedAuthorityId(authority.getId()),
+                        complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.VERIFIED)
+                                + complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.PENDING_VERIFICATION),
+                        complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.IN_PROGRESS),
+                        complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.RESOLVED)
+                                + complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.CLOSED)
+                ))
+                .toList();
     }
 }

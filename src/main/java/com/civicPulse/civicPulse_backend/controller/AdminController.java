@@ -102,4 +102,9 @@ public class AdminController {
                 )
         );
     }
+
+    @GetMapping("/authorities/workload")
+    public ResponseEntity<List<AuthorityWorkloadResponse>> getAuthorityWorkload() {
+        return ResponseEntity.ok(statsService.getAuthorityWorkload());
+    }
 }

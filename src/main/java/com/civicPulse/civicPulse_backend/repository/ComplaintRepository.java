@@ -88,6 +88,8 @@ long countByCitizenIdAndStatusNotIn(Long citizenId, List<ComplaintStatus> exclud
 
     List<Complaint> findAllByStatus(ComplaintStatus status);
     Page<Complaint> findByAssignedAuthorityId(Long assignedAuthorityId, Pageable pageable);
+    long countByAssignedAuthorityIdAndStatus(Long assignedAuthorityId, ComplaintStatus status);
 
+    long countByAssignedAuthorityId(Long assignedAuthorityId);
 }
 
