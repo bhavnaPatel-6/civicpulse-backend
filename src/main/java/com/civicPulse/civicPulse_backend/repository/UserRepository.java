@@ -1,5 +1,6 @@
 package com.civicPulse.civicPulse_backend.repository;
 
+import com.civicPulse.civicPulse_backend.entity.Department;
 import com.civicPulse.civicPulse_backend.entity.Role;
 import com.civicPulse.civicPulse_backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findTop10ByOrderByReputationPointsDesc();
 
     List<User> findByRole(Role role);
+    // ✅ NEW: Get authorities by department
+    List<User> findByRoleAndDepartment(Role role, Department department);
+
+
+    // ✅ NEW: Get authorities by department + ward
+    List<User> findByRoleAndDepartmentAndWard(
+            Role role,
+            Department department,
+            String ward
+    );
+
 }

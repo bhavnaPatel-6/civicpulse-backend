@@ -9,6 +9,7 @@ import com.civicPulse.civicPulse_backend.service.*;
 
 import jakarta.validation.Valid;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -116,5 +117,23 @@ public class AdminController {
                 "This is a test email from CivicPulse backend."
         );
         return "Email sent attempt";
+    }
+    @GetMapping("/authorities")
+    public ResponseEntity<List<AuthorityResponse>> getAuthorities(
+            @RequestParam Department department,
+            @RequestParam(required = false) String ward) {
+
+        return ResponseEntity.ok(adminService.getAuthoritiesByDepartmentAndWard(department, ward));
+    }
+    @PatchMapping("/complaints/{id}/assign")
+    public ResponseEntity<ComplaintAssignResponse> assignComplaint(
+            Authentication authentication,
+            @PathVariable Long id,
+            @Valid @RequestBody ComplaintAssignRequest request) {
+
+        ComplaintAssignResponse response = complaintService.assignComplaintToAuthority(
+                authentication.getName(), id, request);
+
+        return ResponseEntity.ok(response);
     }
 }

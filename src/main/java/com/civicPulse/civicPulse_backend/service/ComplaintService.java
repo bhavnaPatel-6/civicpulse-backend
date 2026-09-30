@@ -1,13 +1,9 @@
 package com.civicPulse.civicPulse_backend.service;
 
-import com.civicPulse.civicPulse_backend.dto.ComplaintRejectRequest;
-import com.civicPulse.civicPulse_backend.dto.ComplaintResolveRequest;
-import com.civicPulse.civicPulse_backend.dto.RewardHistoryResponse;
+import com.civicPulse.civicPulse_backend.dto.*;
 import com.civicPulse.civicPulse_backend.entity.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.civicPulse.civicPulse_backend.dto.ComplaintCreateRequest;
-import com.civicPulse.civicPulse_backend.dto.ComplaintResponse;
 import com.civicPulse.civicPulse_backend.repository.ComplaintRepository;
 import com.civicPulse.civicPulse_backend.repository.ComplaintUpvoteRepository;
 import com.civicPulse.civicPulse_backend.repository.RewardHistoryRepository;
@@ -490,5 +486,39 @@ public class ComplaintService {
         }
 
         return complaints.map(this::toResponse);
+    }public ComplaintAssignResponse assignComplaintToAuthority(
+            String adminEmail,
+            Long complaintId,
+            ComplaintAssignRequest request) {
+
+        Complaint complaint = complaintRepository.findById(complaintId)
+                .orElseThrow(() -> new RuntimeException("Complaint not found"));
+
+        if (complaint.getStatus() == ComplaintStatus.CLOSED
+                || complaint.getStatus() == ComplaintStatus.REJECTED) {
+            throw new RuntimeException("Cannot assign a closed or rejected complaint");
+        }
+
+        User authority = userRepository.findById(request.getAuthorityId())
+                .orElseThrow(() -> new RuntimeException("Authority not found"));
+
+        if (authority.getRole() != Role.AUTHORITY) {
+            throw new RuntimeException("Selected user is not an authority");
+        }
+
+        boolean wardMismatch = complaint.getWard() != null
+                && !complaint.getWard().equalsIgnoreCase(authority.getWard());
+
+        complaint.setAssignedAuthority(authority);
+        complaint.setDepartment(authority.getDepartment());
+
+        Complaint saved = complaintRepository.save(complaint);
+
+        String warning = wardMismatch
+                ? "Assigned authority's ward (" + authority.getWard()
+                + ") does not match complaint's ward (" + complaint.getWard() + ")"
+                : null;
+
+        return new ComplaintAssignResponse(toResponse(saved), wardMismatch, warning);
     }
 }
