@@ -55,10 +55,13 @@ public class Complaint {
     @Column(nullable = false, length = 30)
     private Department department;
 
-    // Authority verification ke baad priority
+    // CHANGED: ab Priority Engine (system) set karta hai, verify par freeze hoti hai
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private Priority priority;
+
+    // NEW: Priority Engine ka score (0-100)
+    private Double priorityScore;
 
     // Complaint ka current status
     @Enumerated(EnumType.STRING)
@@ -87,18 +90,13 @@ public class Complaint {
 
     private LocalDateTime resolvedAt;
 
-// Complaint.java mein add karo
-
     @Column(nullable = false)
     private Integer upvoteCount = 0;
 
-    public Integer getUpvoteCount() {
-        return upvoteCount;
-    }
+    @Column(length = 1000)
+    private String resolutionNote;
 
-    public void setUpvoteCount(Integer upvoteCount) {
-        this.upvoteCount = upvoteCount;
-    }
+    private String resolutionPhotoUrl;
 
     @PrePersist
     protected void onCreate() {
@@ -117,14 +115,17 @@ public class Complaint {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-// Complaint.java mein add karo
 
-    @Column(length = 1000)
-    private String resolutionNote;
+    // ===== Getters and Setters =====
 
-    private String resolutionPhotoUrl;
+    public Integer getUpvoteCount() {
+        return upvoteCount;
+    }
 
-    // Getters and Setters
+    public void setUpvoteCount(Integer upvoteCount) {
+        this.upvoteCount = upvoteCount;
+    }
+
     public String getResolutionNote() {
         return resolutionNote;
     }
@@ -140,8 +141,6 @@ public class Complaint {
     public void setResolutionPhotoUrl(String resolutionPhotoUrl) {
         this.resolutionPhotoUrl = resolutionPhotoUrl;
     }
-
-    // ===== Getters and Setters =====
 
     public Long getId() {
         return id;
@@ -245,6 +244,15 @@ public class Complaint {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    // NEW
+    public Double getPriorityScore() {
+        return priorityScore;
+    }
+
+    public void setPriorityScore(Double priorityScore) {
+        this.priorityScore = priorityScore;
     }
 
     public ComplaintStatus getStatus() {

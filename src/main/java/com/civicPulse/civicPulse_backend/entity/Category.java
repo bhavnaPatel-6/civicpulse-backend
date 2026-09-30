@@ -26,6 +26,11 @@ public class Category {
     @Column(nullable = false, length = 30)
     private Department defaultDepartment;
 
+    // NEW: risk severity 1 (low) .. 5 (very dangerous). Priority Engine isse use karta hai.
+    // columnDefinition default isliye, taaki purani rows wali table mein column add ho sake.
+    @Column(nullable = false, columnDefinition = "integer default 3")
+    private Integer severity = 3;
+
     @Column(nullable = false)
     private Boolean active = true;
 
@@ -39,6 +44,9 @@ public class Category {
         if (this.active == null) {
             this.active = true;
         }
+        if (this.severity == null) {
+            this.severity = 3;
+        }
     }
 
     public Category() {
@@ -48,6 +56,13 @@ public class Category {
         this.name = name;
         this.defaultDepartment = defaultDepartment;
         this.active = true;
+        this.severity = 3;
+    }
+
+    // NEW
+    public Category(String name, Department defaultDepartment, Integer severity) {
+        this(name, defaultDepartment);
+        this.severity = severity;
     }
 
     public Long getId() {
@@ -72,6 +87,15 @@ public class Category {
 
     public void setDefaultDepartment(Department defaultDepartment) {
         this.defaultDepartment = defaultDepartment;
+    }
+
+    // NEW
+    public Integer getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(Integer severity) {
+        this.severity = severity;
     }
 
     public Boolean getActive() {

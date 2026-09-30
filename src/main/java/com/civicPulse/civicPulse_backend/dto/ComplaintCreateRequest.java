@@ -106,4 +106,8 @@ public class ComplaintCreateRequest {
     public void setWard(String ward) {
         this.ward = ward;
     }
+    private Integer severity;          // optional, 1..5 (null ho to 3 lagega)
+
+    public Integer getSeverity() { return severity; }
+    public void setSeverity(Integer severity) { this.severity = severity; }
 }

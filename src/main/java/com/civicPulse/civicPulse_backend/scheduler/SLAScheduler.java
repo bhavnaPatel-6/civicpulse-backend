@@ -46,9 +46,7 @@ public class SLAScheduler {
             var authority = complaint.getAssignedAuthority();
 
             String subject = "⚠️ SLA Deadline Approaching - Complaint #" + complaint.getId();
-            String body = "Complaint '" + complaint.getTitle() + "' (Ward: " + complaint.getWard()
-                    + ") ki SLA deadline 6 ghante mein aane wali hai. Kripya jaldi karwai karein.";
-
+            String body = "The SLA deadline for Complaint '" + complaint.getTitle() + "' (Ward: " + complaint.getWard() + ") is approaching within the next 6 hours. " + "Please take the necessary action as soon as possible.";
             if (authority != null) {
                 emailService.sendEmail(authority.getEmail(), subject, body);
             }
@@ -72,7 +70,7 @@ public class SLAScheduler {
 
             String subject = "🔴 SLA BREACHED - Complaint #" + complaint.getId();
             String body = "Complaint '" + complaint.getTitle() + "' (Ward: " + complaint.getWard()
-                    + ") ki SLA deadline nikal chuki hai. Turant karwai zaroori hai. Assigned Authority: "
+                    + ") SLA deadline is gone .Take action now . Assigned Authority: "
                     + (authority != null ? authority.getName() : "Not Assigned");
 
             if (authority != null) {

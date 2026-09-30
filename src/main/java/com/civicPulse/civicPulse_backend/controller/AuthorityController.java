@@ -31,16 +31,14 @@ public class AuthorityController {
     @PatchMapping("/complaints/{id}/verify")
     public ResponseEntity<?> verifyComplaint(
             Authentication authentication,
-            @PathVariable Long id,
-            @Valid @RequestBody ComplaintVerifyRequest request
+            @PathVariable Long id
     ) {
         String authorityEmail = authentication.getName();
 
         return ResponseEntity.ok(
-                complaintService.verifyComplaint(authorityEmail, id, request)
+                complaintService.verifyComplaint(authorityEmail, id)
         );
     }
-
     // Authority: complaint reject karo
     @PatchMapping("/complaints/{id}/reject")
     public ResponseEntity<?> rejectComplaint(

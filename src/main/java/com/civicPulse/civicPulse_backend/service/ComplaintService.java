@@ -2,7 +2,6 @@ package com.civicPulse.civicPulse_backend.service;
 
 import com.civicPulse.civicPulse_backend.dto.ComplaintRejectRequest;
 import com.civicPulse.civicPulse_backend.dto.ComplaintResolveRequest;
-import com.civicPulse.civicPulse_backend.dto.ComplaintVerifyRequest;
 import com.civicPulse.civicPulse_backend.dto.RewardHistoryResponse;
 import com.civicPulse.civicPulse_backend.entity.*;
 import org.springframework.data.domain.Page;
@@ -33,6 +32,7 @@ public class ComplaintService {
     private final SLATrackerRepository slaTrackerRepository;
     private final ComplaintUpvoteRepository upvoteRepository;
     private final RewardHistoryRepository rewardHistoryRepository;
+    private final PriorityEngine priorityEngine;                       // NEW
 
     public ComplaintService(
             ComplaintRepository complaintRepository,
@@ -41,7 +41,8 @@ public class ComplaintService {
             SLARuleRepository slaRuleRepository,
             SLATrackerRepository slaTrackerRepository,
             ComplaintUpvoteRepository upvoteRepository,
-            RewardHistoryRepository rewardHistoryRepository) {
+            RewardHistoryRepository rewardHistoryRepository,
+            PriorityEngine priorityEngine) {                           // NEW
 
         this.complaintRepository = complaintRepository;
         this.userRepository = userRepository;
@@ -50,6 +51,7 @@ public class ComplaintService {
         this.slaTrackerRepository = slaTrackerRepository;
         this.upvoteRepository = upvoteRepository;
         this.rewardHistoryRepository = rewardHistoryRepository;
+        this.priorityEngine = priorityEngine;                          // NEW
     }
 
 
@@ -78,6 +80,10 @@ public class ComplaintService {
         complaint.setDepartment(category.getDefaultDepartment());
 
         Complaint saved = complaintRepository.save(complaint);
+
+        // NEW: system automatically initial priority nikalta hai (id chahiye, isliye save ke baad)
+        priorityEngine.recalculate(saved);
+        saved = complaintRepository.save(saved);
 
         return toResponse(saved);
     }
@@ -111,11 +117,10 @@ public class ComplaintService {
     }
 
 
-    // Authority: complaint verify karo, priority set karo
+    // Authority: complaint verify karo (priority ab system set karta hai, request body nahi chahiye)
     public ComplaintResponse verifyComplaint(
             String authorityEmail,
-            Long complaintId,
-            ComplaintVerifyRequest request) {
+            Long complaintId) {                                        // CHANGED: request param hata diya
 
         User authority = userRepository.findByEmail(authorityEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -131,8 +136,10 @@ public class ComplaintService {
             throw new RuntimeException("Only pending complaints can be verified");
         }
 
+        // CHANGED: manual priority ki jagah engine ka final score, yahan priority freeze hoti hai
+        priorityEngine.finalizeAtVerification(complaint);
+
         complaint.setStatus(ComplaintStatus.VERIFIED);
-        complaint.setPriority(request.getPriority());
         complaint.setReviewedBy(authority);
         complaint.setAssignedAuthority(authority);
         complaint.setVerifiedAt(LocalDateTime.now());
@@ -306,9 +313,9 @@ public class ComplaintService {
 
         complaint.setUpvoteCount(complaint.getUpvoteCount() + 1);
 
-        if (complaint.getUpvoteCount() >= 10 && complaint.getPriority() == null) {
-            complaint.setPriority(Priority.HIGH);
-        }
+        // CHANGED: purana "10 upvotes => HIGH" wala hack hata diya.
+        // Engine upvotes ko density factor mein le leta hai (verify ke baad apne aap skip).
+        priorityEngine.recalculate(complaint);
 
         Complaint saved = complaintRepository.save(complaint);
 
@@ -386,9 +393,7 @@ public class ComplaintService {
     }
 
 
-
     // Entity ko Response DTO mein convert karna
-// Entity ko Response DTO mein convert karna
     private ComplaintResponse toResponse(Complaint c) {
 
         LocalDateTime slaDeadline = null;
