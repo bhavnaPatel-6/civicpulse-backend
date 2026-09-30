@@ -233,7 +233,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                 ApiError.of(500, "INTERNAL_ERROR",
-                        "Kuch galat ho gaya. Support ko ye ID batayein: " + traceId,
+                        "Unable to process your request. Please try again later.",
                         req.getRequestURI(), traceId));
     }
 
