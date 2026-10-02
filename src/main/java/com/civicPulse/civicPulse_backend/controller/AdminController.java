@@ -136,4 +136,17 @@ public class AdminController {
 
         return ResponseEntity.ok(response);
     }
+    // ===== DELETE Authority =====
+    @DeleteMapping("/authorities/{id}")
+    public ResponseEntity<String> deleteAuthority(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.deleteAuthority(id));
+    }
+
+    // ===== UPDATE Authority (Department & Ward) =====
+    @PutMapping("/authorities/{id}")
+    public ResponseEntity<AuthorityResponse> updateAuthority(
+            @PathVariable Long id,
+            @Valid @RequestBody AuthorityUpdateRequest request) {
+        return ResponseEntity.ok(adminService.updateAuthority(id, request));
+    }
 }
