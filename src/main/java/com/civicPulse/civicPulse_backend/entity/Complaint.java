@@ -318,4 +318,27 @@ public class Complaint {
     public void setResolvedAt(LocalDateTime resolvedAt) {
         this.resolvedAt = resolvedAt;
     }
+    @Column(name = "ai_validated")
+    private Boolean aiValidated;
+
+    @Column(name = "ai_validation_reason", length = 500)
+    private String aiValidationReason;
+
+    // Getters and Setters:
+    public Boolean getAiValidated() {
+        return aiValidated;
+    }
+
+    public void setAiValidated(Boolean aiValidated) {
+        this.aiValidated = aiValidated;
+    }
+
+    public String getAiValidationReason() {
+        return aiValidationReason;
+    }
+
+    public void setAiValidationReason(String aiValidationReason) {
+        this.aiValidationReason = aiValidationReason;
+    }
+
 }

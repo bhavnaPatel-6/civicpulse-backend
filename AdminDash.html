@@ -612,6 +612,8 @@ tbody tr:hover {
 }
 
 .status-badge.pending { background: rgba(245, 158, 11, 0.1); color: var(--accent); }
+.status-badge.auto-validated { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+.status-badge.needs-evidence { background: rgba(249, 115, 22, 0.15); color: #F97316; }
 .status-badge.verified { background: rgba(79, 70, 229, 0.1); color: var(--primary); }
 .status-badge.progress { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
 .status-badge.resolved { background: rgba(16, 185, 129, 0.1); color: var(--secondary); }
@@ -1531,10 +1533,12 @@ tbody tr:hover {
 <script>
 const API = 'https://civicpulse-backend-oamw.onrender.com';
 const DEPARTMENTS = ['SANITATION','WATER_SUPPLY','PUBLIC_WORKS','STREET_LIGHT','PUBLIC_SAFETY','ANIMAL_CONTROL','HEALTH','REVENUE','OTHER'];
-const STATUSES = ['PENDING_VERIFICATION','VERIFIED','IN_PROGRESS','RESOLVED','CLOSED','REJECTED'];
+const STATUSES = ['PENDING_VERIFICATION','AUTO_VALIDATED','NEEDS_EVIDENCE','VERIFIED','IN_PROGRESS','RESOLVED','CLOSED','REJECTED'];
 
 const STATUS_CONFIG = {
   PENDING_VERIFICATION: { label: 'Pending', class: 'pending', color: '#F59E0B' },
+  AUTO_VALIDATED: { label: 'AI Validated', class: 'auto-validated', color: '#10B981' },
+  NEEDS_EVIDENCE: { label: 'Needs Evidence', class: 'needs-evidence', color: '#F97316' },
   VERIFIED: { label: 'Verified', class: 'verified', color: '#4F46E5' },
   IN_PROGRESS: { label: 'In Progress', class: 'progress', color: '#3B82F6' },
   RESOLVED: { label: 'Resolved', class: 'resolved', color: '#10B981' },
@@ -1894,7 +1898,7 @@ async function loadOverview() {
         <td><b>${esc(c.title)}</b></td>
         <td style="max-width:180px;"><span style="font-size:12px;color:var(--gray-600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;" title="${esc(c.address || '')}">${esc(c.address || '—')}</span></td>
         <td>${esc(c.categoryName || '—')}</td>
-        <td><span class="status-badge ${STATUS_CONFIG[c.status].class}"><span class="status-dot"></span>${STATUS_CONFIG[c.status].label}</span></td>
+        <td><span class="status-badge ${(STATUS_CONFIG[c.status] || { class: 'pending', label: c.status || 'Pending' }).class}"><span class="status-dot"></span>${(STATUS_CONFIG[c.status] || { class: 'pending', label: c.status || 'Pending' }).label}</span></td>
         <td>${esc(c.citizenName || '—')}</td>
         <td>${c.createdAt ? c.createdAt.slice(0, 10) : '—'}</td>
       </tr>
@@ -1941,7 +1945,7 @@ async function loadComplaints() {
         <td style="max-width:200px;"><span style="font-size:12px;color:var(--gray-600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;" title="${esc(c.address || '')}">${esc(c.address || '—')}</span></td>
         <td>${esc(c.categoryName || '—')}</td>
         <td>${esc(pretty(c.department))}</td>
-        <td><span class="status-badge ${STATUS_CONFIG[c.status].class}"><span class="status-dot"></span>${STATUS_CONFIG[c.status].label}</span></td>
+        <td><span class="status-badge ${(STATUS_CONFIG[c.status] || { class: 'pending', label: c.status || 'Pending' }).class}"><span class="status-dot"></span>${(STATUS_CONFIG[c.status] || { class: 'pending', label: c.status || 'Pending' }).label}</span></td>
         <td>${esc(c.citizenName || '—')}</td>
         <td>${c.createdAt ? c.createdAt.slice(0, 10) : '—'}</td>
       </tr>

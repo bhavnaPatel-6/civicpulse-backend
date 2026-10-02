@@ -32,6 +32,64 @@ public class ComplaintResponse {
     private LocalDateTime createdAt;
     private LocalDateTime verifiedAt;
     private LocalDateTime resolvedAt;
+    private Boolean aiValidated;
+    private String aiValidationReason;
+
+    public ComplaintResponse(
+            Long id,
+            String title,
+            String description,
+            String categoryName,
+            String photoUrl,
+            Double latitude,
+            Double longitude,
+            String address,
+            String city,
+            String ward,
+            Department department,
+            Priority priority,
+            ComplaintStatus status,
+            String citizenName,
+            String assignedAuthorityName,
+            String rejectionReason,
+            String resolutionNote,
+            String resolutionPhotoUrl,
+            Integer upvoteCount,
+            LocalDateTime slaDeadline,
+            Boolean slaBreached,
+            LocalDateTime createdAt,
+            LocalDateTime verifiedAt,
+            LocalDateTime resolvedAt,
+            Boolean aiValidated,
+            String aiValidationReason) {
+
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.categoryName = categoryName;
+        this.photoUrl = photoUrl;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.address = address;
+        this.city = city;
+        this.ward = ward;
+        this.department = department;
+        this.priority = priority;
+        this.status = status;
+        this.citizenName = citizenName;
+        this.assignedAuthorityName = assignedAuthorityName;
+        this.rejectionReason = rejectionReason;
+        this.resolutionNote = resolutionNote;
+        this.resolutionPhotoUrl = resolutionPhotoUrl;
+        this.upvoteCount = upvoteCount;
+        this.slaDeadline = slaDeadline;
+        this.slaBreached = slaBreached;
+        this.createdAt = createdAt;
+        this.verifiedAt = verifiedAt;
+        this.resolvedAt = resolvedAt;
+        this.aiValidated = aiValidated;
+        this.aiValidationReason = aiValidationReason;
+    }
 
     public ComplaintResponse(
             Long id,
@@ -59,30 +117,10 @@ public class ComplaintResponse {
             LocalDateTime verifiedAt,
             LocalDateTime resolvedAt) {
 
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.categoryName = categoryName;
-        this.photoUrl = photoUrl;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.address = address;
-        this.city = city;
-        this.ward = ward;
-        this.department = department;
-        this.priority = priority;
-        this.status = status;
-        this.citizenName = citizenName;
-        this.assignedAuthorityName = assignedAuthorityName;
-        this.rejectionReason = rejectionReason;
-        this.resolutionNote = resolutionNote;
-        this.resolutionPhotoUrl = resolutionPhotoUrl;
-        this.upvoteCount = upvoteCount;
-        this.slaDeadline = slaDeadline;
-        this.slaBreached = slaBreached;
-        this.createdAt = createdAt;
-        this.verifiedAt = verifiedAt;
-        this.resolvedAt = resolvedAt;
+        this(id, title, description, categoryName, photoUrl, latitude, longitude, address, city, ward,
+             department, priority, status, citizenName, assignedAuthorityName, rejectionReason, resolutionNote,
+             resolutionPhotoUrl, upvoteCount, slaDeadline, slaBreached, createdAt, verifiedAt, resolvedAt,
+             null, null);
     }
 
     // ===== Getters =====
@@ -111,4 +149,6 @@ public class ComplaintResponse {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getVerifiedAt() { return verifiedAt; }
     public LocalDateTime getResolvedAt() { return resolvedAt; }
+    public Boolean getAiValidated() { return aiValidated; }
+    public String getAiValidationReason() { return aiValidationReason; }
 }

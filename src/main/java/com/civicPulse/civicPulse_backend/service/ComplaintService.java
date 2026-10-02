@@ -28,7 +28,8 @@ public class ComplaintService {
     private final SLATrackerRepository slaTrackerRepository;
     private final ComplaintUpvoteRepository upvoteRepository;
     private final RewardHistoryRepository rewardHistoryRepository;
-    private final PriorityEngine priorityEngine;                       // NEW
+    private final PriorityEngine priorityEngine;
+    private final AIValidationService aiValidationService;
 
     public ComplaintService(
             ComplaintRepository complaintRepository,
@@ -38,8 +39,8 @@ public class ComplaintService {
             SLATrackerRepository slaTrackerRepository,
             ComplaintUpvoteRepository upvoteRepository,
             RewardHistoryRepository rewardHistoryRepository,
-            PriorityEngine priorityEngine) {                           // NEW
-
+            PriorityEngine priorityEngine,
+            AIValidationService aiValidationService) {
         this.complaintRepository = complaintRepository;
         this.userRepository = userRepository;
         this.categoryService = categoryService;
@@ -47,14 +48,12 @@ public class ComplaintService {
         this.slaTrackerRepository = slaTrackerRepository;
         this.upvoteRepository = upvoteRepository;
         this.rewardHistoryRepository = rewardHistoryRepository;
-        this.priorityEngine = priorityEngine;                          // NEW
+        this.priorityEngine = priorityEngine;
+        this.aiValidationService = aiValidationService;
     }
 
-
-    // Citizen ek naya complaint report karta hai
-    public ComplaintResponse createComplaint(
-            String citizenEmail,
-            ComplaintCreateRequest request) {
+    // Citizen: naya complaint report karta hai
+    public ComplaintResponse createComplaint(String citizenEmail, ComplaintCreateRequest request) {
 
         User citizen = userRepository.findByEmail(citizenEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -72,18 +71,39 @@ public class ComplaintService {
         complaint.setAddress(request.getAddress());
         complaint.setCity(request.getCity());
         complaint.setWard(request.getWard());
-
         complaint.setDepartment(category.getDefaultDepartment());
+
+        // === AI VISION + TEXT VALIDATION STEP ===
+        AIValidationResult ai = aiValidationService.validate(
+                complaint.getTitle(),
+                complaint.getDescription(),
+                category.getName(),
+                complaint.getPhotoUrl()
+        );
+
+        complaint.setAiValidated(ai.valid());
+        complaint.setAiValidationReason(ai.reason());
+
+        // Status Determination:
+        // 1. Valid + Public + Not Spam -> AUTO_VALIDATED
+        // 2. Domestic / Spam / Fraud -> NEEDS_EVIDENCE
+        // 3. Otherwise -> PENDING_VERIFICATION for human authority check
+        if (ai.valid() && ai.isPublicIssue() && !ai.spam()) {
+            complaint.setStatus(ComplaintStatus.AUTO_VALIDATED);
+        } else if (ai.spam() || !ai.isPublicIssue()) {
+            complaint.setStatus(ComplaintStatus.NEEDS_EVIDENCE);
+        } else {
+            complaint.setStatus(ComplaintStatus.PENDING_VERIFICATION);
+        }
 
         Complaint saved = complaintRepository.save(complaint);
 
-        // NEW: system automatically initial priority nikalta hai (id chahiye, isliye save ke baad)
+        // Initial Priority calculation
         priorityEngine.recalculate(saved);
         saved = complaintRepository.save(saved);
 
         return toResponse(saved);
     }
-
 
     // Ek specific complaint dekhna
     public ComplaintResponse getComplaintById(Long id) {
@@ -92,7 +112,6 @@ public class ComplaintService {
 
         return toResponse(complaint);
     }
-
 
     // Citizen: apni saari complaints dekho (paginated)
     public Page<ComplaintResponse> getMyComplaints(String citizenEmail, Pageable pageable) {
@@ -104,7 +123,6 @@ public class ComplaintService {
                 .map(this::toResponse);
     }
 
-
     // Authority: apne department ki saari complaints dekho (paginated)
     public Page<ComplaintResponse> getComplaintsByDepartment(Department department, Pageable pageable) {
 
@@ -112,11 +130,8 @@ public class ComplaintService {
                 .map(this::toResponse);
     }
 
-
-    // Authority: complaint verify karo (priority ab system set karta hai, request body nahi chahiye)
-    public ComplaintResponse verifyComplaint(
-            String authorityEmail,
-            Long complaintId) {                                        // CHANGED: request param hata diya
+    // Authority: complaint verify karo (priority engine set karta hai)
+    public ComplaintResponse verifyComplaint(String authorityEmail, Long complaintId) {
 
         User authority = userRepository.findByEmail(authorityEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -128,11 +143,12 @@ public class ComplaintService {
             throw new RuntimeException("You are not authorized to handle this complaint");
         }
 
-        if (complaint.getStatus() != ComplaintStatus.PENDING_VERIFICATION) {
-            throw new RuntimeException("Only pending complaints can be verified");
+        if (complaint.getStatus() != ComplaintStatus.PENDING_VERIFICATION
+                && complaint.getStatus() != ComplaintStatus.AUTO_VALIDATED
+                && complaint.getStatus() != ComplaintStatus.NEEDS_EVIDENCE) {
+            throw new RuntimeException("Only pending, auto-validated, or evidence-reviewed complaints can be verified");
         }
 
-        // CHANGED: manual priority ki jagah engine ka final score, yahan priority freeze hoti hai
         priorityEngine.finalizeAtVerification(complaint);
 
         complaint.setStatus(ComplaintStatus.VERIFIED);
@@ -149,7 +165,6 @@ public class ComplaintService {
         return toResponse(saved);
     }
 
-
     // Authority: complaint reject karo, reason ke saath
     public ComplaintResponse rejectComplaint(
             String authorityEmail,
@@ -165,8 +180,12 @@ public class ComplaintService {
         if (authority.getDepartment() != complaint.getDepartment()) {
             throw new RuntimeException("You are not authorized to handle this complaint");
         }
-        if (complaint.getStatus() != ComplaintStatus.PENDING_VERIFICATION) {
-            throw new RuntimeException("Only pending complaints can be rejected");
+
+        // Allow rejecting pending, auto-validated, or needs-evidence complaints
+        if (complaint.getStatus() != ComplaintStatus.PENDING_VERIFICATION
+                && complaint.getStatus() != ComplaintStatus.AUTO_VALIDATED
+                && complaint.getStatus() != ComplaintStatus.NEEDS_EVIDENCE) {
+            throw new RuntimeException("This complaint cannot be rejected in its current status");
         }
 
         complaint.setStatus(ComplaintStatus.REJECTED);
@@ -177,7 +196,6 @@ public class ComplaintService {
 
         return toResponse(saved);
     }
-
 
     // Authority: verified complaint pe kaam shuru karo
     public ComplaintResponse startProgress(String authorityEmail, Long complaintId) {
@@ -201,7 +219,6 @@ public class ComplaintService {
 
         return toResponse(complaintRepository.save(complaint));
     }
-
 
     // Authority: complaint resolve karo, proof photo ke saath
     public ComplaintResponse resolveComplaint(
@@ -240,7 +257,6 @@ public class ComplaintService {
         return toResponse(saved);
     }
 
-
     // Citizen: resolved complaint ko confirm/close karo
     public ComplaintResponse closeComplaint(String citizenEmail, Long complaintId) {
 
@@ -263,7 +279,6 @@ public class ComplaintService {
         return toResponse(complaintRepository.save(complaint));
     }
 
-
     // ===== Similar complaints dhoondo (radius-based) =====
     public List<ComplaintResponse> findSimilarComplaints(Long categoryId, Double latitude, Double longitude) {
 
@@ -278,7 +293,6 @@ public class ComplaintService {
                 .map(this::toResponse)
                 .toList();
     }
-
 
     // ===== Upvote karo =====
     public ComplaintResponse upvoteComplaint(String citizenEmail, Long complaintId) {
@@ -309,8 +323,6 @@ public class ComplaintService {
 
         complaint.setUpvoteCount(complaint.getUpvoteCount() + 1);
 
-        // CHANGED: purana "10 upvotes => HIGH" wala hack hata diya.
-        // Engine upvotes ko density factor mein le leta hai (verify ke baad apne aap skip).
         priorityEngine.recalculate(complaint);
 
         Complaint saved = complaintRepository.save(complaint);
@@ -323,7 +335,6 @@ public class ComplaintService {
 
         return toResponse(saved);
     }
-
 
     // ===== Apni reward history dekho =====
     public Page<RewardHistoryResponse> getMyRewardHistory(String citizenEmail, Pageable pageable) {
@@ -342,7 +353,6 @@ public class ComplaintService {
                 ));
     }
 
-
     // Helper - points award karo aur history save karo
     private void awardPoints(User citizen, int points, RewardReason reason, Complaint complaint) {
 
@@ -352,7 +362,6 @@ public class ComplaintService {
         RewardHistory history = new RewardHistory(citizen, points, reason, complaint);
         rewardHistoryRepository.save(history);
     }
-
 
     // Helper - SLA rule dekh kar tracker banata hai
     private void createSlaTracker(Complaint complaint) {
@@ -371,7 +380,6 @@ public class ComplaintService {
         slaTrackerRepository.save(tracker);
     }
 
-
     // Helper - Haversine formula, do points ke beech distance nikalta hai (meters mein)
     private double calculateDistanceInMeters(double lat1, double lon1, double lat2, double lon2) {
         final int R = 6371000;
@@ -387,7 +395,6 @@ public class ComplaintService {
 
         return R * c;
     }
-
 
     // Entity ko Response DTO mein convert karna
     private ComplaintResponse toResponse(Complaint c) {
@@ -425,10 +432,11 @@ public class ComplaintService {
                 slaBreached,
                 c.getCreatedAt(),
                 c.getVerifiedAt(),
-                c.getResolvedAt()
+                c.getResolvedAt(),
+                c.getAiValidated(),
+                c.getAiValidationReason()
         );
     }
-
 
     public Page<ComplaintResponse> getMyAssignedComplaints(String authorityEmail, Pageable pageable) {
 
@@ -438,7 +446,6 @@ public class ComplaintService {
         return complaintRepository.findByAssignedAuthorityId(authority.getId(), pageable)
                 .map(this::toResponse);
     }
-
 
     // Authority: apne department ki complaints (optional status filter ke saath)
     public Page<ComplaintResponse> getComplaintsForAuthority(
@@ -486,7 +493,9 @@ public class ComplaintService {
         }
 
         return complaints.map(this::toResponse);
-    }public ComplaintAssignResponse assignComplaintToAuthority(
+    }
+
+    public ComplaintAssignResponse assignComplaintToAuthority(
             String adminEmail,
             Long complaintId,
             ComplaintAssignRequest request) {

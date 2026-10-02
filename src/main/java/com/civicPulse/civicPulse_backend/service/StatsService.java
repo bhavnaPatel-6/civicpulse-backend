@@ -40,7 +40,9 @@ public class StatsService {
         long total = complaintRepository.count();
         long resolved = complaintRepository.countByStatus(ComplaintStatus.RESOLVED)
                 + complaintRepository.countByStatus(ComplaintStatus.CLOSED);
-        long pending = complaintRepository.countByStatus(ComplaintStatus.PENDING_VERIFICATION);
+        long pending = complaintRepository.countByStatus(ComplaintStatus.PENDING_VERIFICATION)
+                + complaintRepository.countByStatus(ComplaintStatus.AUTO_VALIDATED)
+                + complaintRepository.countByStatus(ComplaintStatus.NEEDS_EVIDENCE);
         long inProgress = complaintRepository.countByStatus(ComplaintStatus.IN_PROGRESS)
                 + complaintRepository.countByStatus(ComplaintStatus.VERIFIED);
         long rejected = complaintRepository.countByStatus(ComplaintStatus.REJECTED);
@@ -92,7 +94,9 @@ public class StatsService {
                         authority.getDepartment() != null ? authority.getDepartment().name() : null,
                         complaintRepository.countByAssignedAuthorityId(authority.getId()),
                         complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.VERIFIED)
-                                + complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.PENDING_VERIFICATION),
+                                + complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.PENDING_VERIFICATION)
+                                + complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.AUTO_VALIDATED)
+                                + complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.NEEDS_EVIDENCE),
                         complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.IN_PROGRESS),
                         complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.RESOLVED)
                                 + complaintRepository.countByAssignedAuthorityIdAndStatus(authority.getId(), ComplaintStatus.CLOSED)

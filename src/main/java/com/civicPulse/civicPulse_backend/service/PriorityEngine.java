@@ -47,7 +47,7 @@ public class PriorityEngine {
     private static final double MEDIUM_MIN   = 30;
 
     private static final List<ComplaintStatus> OPEN_STATUSES =
-            List.of(ComplaintStatus.PENDING_VERIFICATION, ComplaintStatus.VERIFIED, ComplaintStatus.IN_PROGRESS);
+            List.of(ComplaintStatus.PENDING_VERIFICATION, ComplaintStatus.AUTO_VALIDATED, ComplaintStatus.NEEDS_EVIDENCE, ComplaintStatus.VERIFIED, ComplaintStatus.IN_PROGRESS);
     private static final List<ComplaintStatus> DONE_STATUSES =
             List.of(ComplaintStatus.RESOLVED, ComplaintStatus.CLOSED);
 
@@ -85,9 +85,11 @@ public class PriorityEngine {
         return new PriorityResult(total, toPriority(total), breakdown);
     }
 
-    /** Create / upvote / scheduler: sirf PENDING_VERIFICATION complaint ki priority update hoti hai. */
+    /** Create / upvote / scheduler: pending, auto-validated aur needs-evidence complaints ki priority update hoti hai. */
     public void recalculate(Complaint c) {
-        if (c.getStatus() != ComplaintStatus.PENDING_VERIFICATION) return;   // verify ke baad freeze
+        if (c.getStatus() != ComplaintStatus.PENDING_VERIFICATION
+                && c.getStatus() != ComplaintStatus.AUTO_VALIDATED
+                && c.getStatus() != ComplaintStatus.NEEDS_EVIDENCE) return;   // verify ke baad freeze
         apply(c);
     }
 
